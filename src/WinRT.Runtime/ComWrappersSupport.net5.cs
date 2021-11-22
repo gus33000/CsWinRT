@@ -1,17 +1,24 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Threading;
 using WinRT.Interop;
 using static System.Runtime.InteropServices.ComWrappers;
 
 namespace WinRT
 {
-    public static partial class ComWrappersSupport
+#if EMBED
+    internal
+#else
+    public
+#endif
+    static partial class ComWrappersSupport
     {
         // Instance field and property for Singleton pattern: ComWrappers `set` method should be idempotent 
         private static DefaultComWrappers _instance;
@@ -28,7 +35,7 @@ namespace WinRT
         }
 
         internal static readonly ConditionalWeakTable<Type, InspectableInfo> InspectableInfoTable = new ConditionalWeakTable<Type, InspectableInfo>();
-        internal static readonly ThreadLocal<Type> CreateRCWType = new ThreadLocal<Type>();
+        [ThreadStatic] internal static Type CreateRCWType;
 
         private static ComWrappers _comWrappers;
         private static object _comWrappersLock = new object();
@@ -43,7 +50,9 @@ namespace WinRT
                         if (_comWrappers is null)
                         {
                             var comWrappersToSet = DefaultComWrappersInstance;
+#if !EMBED 
                             ComWrappers.RegisterForTrackerSupport(comWrappersToSet);
+#endif
                             _comWrappers = comWrappersToSet;
                         }
                     }
@@ -59,7 +68,9 @@ namespace WinRT
                         return;
                     }
                     var comWrappersToSet = value ?? DefaultComWrappersInstance; 
+#if !EMBED 
                     ComWrappers.RegisterForTrackerSupport(comWrappersToSet);
+#endif
                     _comWrappers = comWrappersToSet; 
                 }
             }
@@ -87,11 +98,11 @@ namespace WinRT
             // when we are called by the ComWrappers API to create the object.  We can't pass this through the
             // ComWrappers API surface, so we are achieving it via a thread local.  We unset it after in case
             // there is other calls to it via other means.
-            CreateRCWType.Value = typeof(T);
+            CreateRCWType = typeof(T);
             
             var flags = tryUseCache ? CreateObjectFlags.TrackerObject : CreateObjectFlags.TrackerObject | CreateObjectFlags.UniqueInstance;
             var rcw = ComWrappers.GetOrCreateObjectForComInstance(ptr, flags);
-            CreateRCWType.Value = null;
+            CreateRCWType = null;
             // Because .NET will de-duplicate strings and WinRT doesn't,
             // our RCW factory returns a wrapper of our string instance.
             // This ensures that ComWrappers never sees the same managed object for two different
@@ -163,6 +174,20 @@ namespace WinRT
             return ObjectReference<IUnknownVftbl>.Attach(ref ccw);
         }
 
+        internal static ObjectReference<T> CreateCCWForObject<T>(object obj, Guid iid)
+        {
+            IntPtr ccw = ComWrappers.GetOrCreateComInterfaceForObject(obj, CreateComInterfaceFlags.TrackerSupport);
+            try
+            {
+                Marshal.ThrowExceptionForHR(Marshal.QueryInterface(ccw, ref iid, out var iidCcw));
+                return ObjectReference<T>.Attach(ref iidCcw);
+            }
+            finally
+            {
+                MarshalInspectable<object>.DisposeAbi(ccw);
+            }
+        }
+
         public static unsafe T FindObject<T>(IntPtr ptr)
             where T : class => ComInterfaceDispatch.GetInstance<T>((ComInterfaceDispatch*)ptr);
 
@@ -187,8 +212,8 @@ namespace WinRT
             ComWrappers = wrappers;
         }
 
-        internal static Func<IInspectable, object> GetTypedRcwFactory(string runtimeClassName) => TypedObjectFactoryCache.GetOrAdd(runtimeClassName, className => CreateTypedRcwFactory(className));
-    
+        internal static Func<IInspectable, object> GetTypedRcwFactory(string runtimeClassName) => TypedObjectFactoryCacheForRuntimeClassName.GetOrAdd(runtimeClassName, className => CreateTypedRcwFactory(className));
+        internal static Func<IInspectable, object> GetTypedRcwFactory(Type implementationType) => TypedObjectFactoryCacheForType.GetOrAdd(implementationType, classType => CreateTypedRcwFactory(classType));
         
         private static Func<IInspectable, object> CreateFactoryForImplementationType(string runtimeClassName, Type implementationType)
         {
@@ -206,7 +231,12 @@ namespace WinRT
         }
     }
 
-    public class ComWrappersHelper
+#if EMBED
+    internal 
+#else
+    public
+#endif     
+    class ComWrappersHelper
     {
         public unsafe static void Init(
             bool isAggregation,
@@ -355,7 +385,12 @@ namespace WinRT
         }
     }
 
-    public class DefaultComWrappers : ComWrappers
+#if EMBED
+    internal 
+#else
+    public 
+#endif     
+    class DefaultComWrappers : ComWrappers
     {
         private static readonly ConditionalWeakTable<Type, VtableEntries> TypeVtableEntryTable = new ConditionalWeakTable<Type, VtableEntries>();
         public static unsafe IUnknownVftbl IUnknownVftbl => Unsafe.AsRef<IUnknownVftbl>(IUnknownVftblPtr.ToPointer());
@@ -432,42 +467,63 @@ namespace WinRT
             return isRcw;
         }
 
-        private static object CreateObject(IObjectReference objRef)
+        private static object CreateObject(IntPtr externalComObject)
         {
-            if (objRef.TryAs<IInspectable.Vftbl>(IInspectable.IID, out var inspectableRef) == 0)
-            {
-                IInspectable inspectable = new IInspectable(inspectableRef);
+            Guid inspectableIID = IInspectable.IID;
+            Guid weakReferenceIID = ABI.WinRT.Interop.IWeakReference.IID;
+            IntPtr ptr = IntPtr.Zero;
 
-                string runtimeClassName = ComWrappersSupport.GetRuntimeClassForTypeCreation(inspectable, ComWrappersSupport.CreateRCWType.Value);
-                if (string.IsNullOrEmpty(runtimeClassName))
+            try
+            {
+                if (Marshal.QueryInterface(externalComObject, ref inspectableIID, out ptr) == 0)
                 {
-                    // If the external IInspectable has not implemented GetRuntimeClassName,
-                    // we use the Inspectable wrapper directly.
-                    return inspectable;
+                    var inspectableObjRef = ComWrappersSupport.GetObjectReferenceForInterface<IInspectable.Vftbl>(ptr);
+                    ComWrappersHelper.Init(inspectableObjRef);
+
+                    IInspectable inspectable = new IInspectable(inspectableObjRef);
+
+                    if (ComWrappersSupport.CreateRCWType != null
+                        && ComWrappersSupport.CreateRCWType.IsSealed)
+                    {
+                        return ComWrappersSupport.GetTypedRcwFactory(ComWrappersSupport.CreateRCWType)(inspectable);
+                    }
+
+                    string runtimeClassName = ComWrappersSupport.GetRuntimeClassForTypeCreation(inspectable, ComWrappersSupport.CreateRCWType);
+                    if (string.IsNullOrEmpty(runtimeClassName))
+                    {
+                        // If the external IInspectable has not implemented GetRuntimeClassName,
+                        // we use the Inspectable wrapper directly.
+                        return inspectable;
+                    }
+
+                    return ComWrappersSupport.GetTypedRcwFactory(runtimeClassName)(inspectable);
                 }
+                else if (Marshal.QueryInterface(externalComObject, ref weakReferenceIID, out ptr) == 0)
+                {
+                    // IWeakReference is IUnknown-based, so implementations of it may not (and likely won't) implement
+                    // IInspectable. As a result, we need to check for them explicitly.
+                    var iunknownObjRef = ComWrappersSupport.GetObjectReferenceForInterface<IUnknownVftbl>(ptr);
+                    ComWrappersHelper.Init(iunknownObjRef);
 
-                return ComWrappersSupport.GetTypedRcwFactory(runtimeClassName)(inspectable);
+                    return new SingleInterfaceOptimizedObject(typeof(IWeakReference), iunknownObjRef, false);
+                }
+                else
+                {
+                    // If the external COM object isn't IInspectable or IWeakReference, we can't handle it.
+                    // If we're registered globally, we want to let the runtime fall back for IUnknown and IDispatch support.
+                    // Return null so the runtime can fall back gracefully in IUnknown and IDispatch scenarios.
+                    return null;
+                }
             }
-            else if (objRef.TryAs<ABI.WinRT.Interop.IWeakReference.Vftbl>(ABI.WinRT.Interop.IWeakReference.IID, out var weakRef) == 0)
+            finally
             {
-                // IWeakReference is IUnknown-based, so implementations of it may not (and likely won't) implement
-                // IInspectable. As a result, we need to check for them explicitly.
-
-                return new SingleInterfaceOptimizedObject(typeof(IWeakReference), weakRef);
+                Marshal.Release(ptr);
             }
-
-            // If the external COM object isn't IInspectable or IWeakReference, we can't handle it.
-            // If we're registered globally, we want to let the runtime fall back for IUnknown and IDispatch support.
-            // Return null so the runtime can fall back gracefully in IUnknown and IDispatch scenarios.
-            return null;
         }
 
         protected override object CreateObject(IntPtr externalComObject, CreateObjectFlags flags)
         {
-            IObjectReference objRef = ComWrappersSupport.GetObjectReferenceForInterface(externalComObject);
-            ComWrappersHelper.Init(objRef);
-
-            var obj = CreateObject(objRef);
+            var obj = CreateObject(externalComObject);
             if (obj is IWinRTObject winrtObj && winrtObj.HasUnwrappableNativeObject && winrtObj.NativeObject != null)
             {
                 // Handle the scenario where the CLR has already done an AddRefFromTrackerSource on the instance
@@ -495,7 +551,7 @@ namespace WinRT
             }
         }
 
-        unsafe class VtableEntries
+        unsafe sealed class VtableEntries
         {
             public ComInterfaceEntry* Data { get; }
             public int Count { get; }

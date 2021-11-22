@@ -1,14 +1,12 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Numerics;
-using System.Security.Cryptography;
-using System.Text;
+using System.Diagnostics;
 using System.Linq.Expressions;
-using System.Collections.Concurrent;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using WinRT.Interop;
 
 #pragma warning disable 0169 // The field 'xxx' is never used
@@ -25,55 +23,123 @@ namespace WinRT
                 handle.Free();
             }
         }
+
+#if !NET
+        public static unsafe ref readonly char GetPinnableReference(this string str)
+        {
+            fixed (char* p = str)
+            {
+                return ref *p;
+            }
+        }
+#endif
     }
 
-    // TODO: minimize heap allocations for marshalers by eliminating explicit try/finally
-    // and adopting ref structs with non-IDisposable Dispose and 'using var ...' pattern,
-    // as well as passing marshalers to FromAbi by ref so they can be conditionally disposed.
-    public class MarshalString
+#if EMBED
+    internal
+#else 
+    public
+#endif
+    class MarshalString
     {
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct HSTRING_HEADER
+        {
+            IntPtr reserved1;
+            int reserved2;
+            int reserved3;
+            int reserved4;
+            int reserved5;
+        }
+
         private IntPtr _header;
-        public GCHandle _gchandle;
-        public IntPtr _handle;
+        private GCHandle _gchandle;
+
+        public ref struct Pinnable
+        {
+            private HSTRING_HEADER _header;
+            private string _value;
+#if DEBUG
+            private bool _pinned;
+#endif
+
+            public Pinnable(string value)
+            {
+                _value = value ?? "";
+                _header = default;
+#if DEBUG
+                _pinned = false;
+#endif            
+            }
+
+            public ref readonly char GetPinnableReference()
+            {
+#if DEBUG
+                _pinned = true;
+#endif
+                return ref _value.GetPinnableReference();
+            }
+
+            public unsafe IntPtr GetAbi()
+            {
+#if DEBUG
+                // We assume that the string is pinned by the calling code
+                Debug.Assert(_pinned);
+#endif
+                if (_value == "") 
+                {
+                    return IntPtr.Zero;
+                }
+                IntPtr hstring;
+                Marshal.ThrowExceptionForHR(Platform.WindowsCreateStringReference(
+                    (char*)Unsafe.AsPointer(ref Unsafe.AsRef(in GetPinnableReference())),
+                    _value.Length,
+                    (IntPtr*)Unsafe.AsPointer(ref _header),
+                    &hstring));
+                return hstring;
+            }
+        }
+
+        public static Pinnable CreatePinnable(string value) => new(value);
+
+        public static IntPtr GetAbi(ref Pinnable p) => p.GetAbi();
+
+        public MarshalString(string value)
+        {
+            _gchandle = GCHandle.Alloc(value, GCHandleType.Pinned);
+            _header = IntPtr.Zero;
+        }
 
         public void Dispose()
         {
             _gchandle.Dispose();
+            _gchandle = default;
             Marshal.FreeHGlobal(_header);
             _header = IntPtr.Zero;
         }
 
-        public static unsafe MarshalString CreateMarshaler(string value)
+        public static MarshalString CreateMarshaler(string value)
         {
-            if (value == null) return null;
+            return string.IsNullOrEmpty(value) ? null : new MarshalString(value);
+        }
 
-            var m = new MarshalString();
-
-            bool success = false;
-            try
-            {
-                m._gchandle = GCHandle.Alloc(value, GCHandleType.Pinned);
-                m._header = Marshal.AllocHGlobal(24); // sizeof(HSTRING_HEADER)
-                fixed (void* chars = value, handle = &m._handle)
-                {
-                    Marshal.ThrowExceptionForHR(Platform.WindowsCreateStringReference(
-                        (char*)chars, value.Length, (IntPtr*)m._header, (IntPtr*)handle));
-                };
-                success = true;
-                return m;
-            }
-            finally
-            {
-                if (!success)
-                {
-                    m.Dispose();
-                }
+        public unsafe IntPtr GetAbi()
+        {
+            var value = (string)_gchandle.Target;
+            fixed (char* chars = value)
+            { 
+                IntPtr hstring;
+                Debug.Assert(_header == IntPtr.Zero);
+                _header = Marshal.AllocHGlobal(Unsafe.SizeOf<HSTRING_HEADER>());
+                Marshal.ThrowExceptionForHR(Platform.WindowsCreateStringReference(
+                    chars, value.Length, (IntPtr*)_header, &hstring));
+                return hstring;
             }
         }
 
-        public static IntPtr GetAbi(MarshalString m) => m is null ? IntPtr.Zero : m._handle;
+        public static IntPtr GetAbi(MarshalString m) => m is null ? IntPtr.Zero : m.GetAbi();
 
-        public static IntPtr GetAbi(object box) => box is null ? IntPtr.Zero : ((MarshalString)box)._handle;
+        public static IntPtr GetAbi(object box) => box is null ? IntPtr.Zero : GetAbi((MarshalString)box);
 
         public static void DisposeMarshaler(MarshalString m) => m?.Dispose();
 
@@ -144,7 +210,6 @@ namespace WinRT
             {
                 return m;
             }
-
             bool success = false;
             try
             {
@@ -254,7 +319,7 @@ namespace WinRT
                 };
                 success = true;
             }
-            finally 
+            finally
             {
                 if (!success)
                 {
@@ -287,7 +352,12 @@ namespace WinRT
         }
     }
 
-    public struct MarshalBlittable<T>
+#if EMBED
+    internal
+#else
+    public
+#endif
+    struct MarshalBlittable<T>
     {
         public struct MarshalerArray
         {
@@ -361,7 +431,12 @@ namespace WinRT
         }
     }
 
-    public class MarshalGeneric<T>
+#if EMBED
+    internal
+#else
+    public
+#endif
+    class MarshalGeneric<T>
     {
         protected static readonly Type HelperType = typeof(T).GetHelperType();
         protected static readonly Type AbiType = typeof(T).GetAbiType();
@@ -528,7 +603,12 @@ namespace WinRT
         internal static unsafe void CopyManagedArray(T[] array, IntPtr data) => MarshalInterfaceHelper<T>.CopyManagedArray(array, data, CopyManagedLazy.Value ?? CopyManagedFallback);
     }
 
-    public class MarshalNonBlittable<T> : MarshalGeneric<T>
+#if EMBED
+    internal
+#else
+    public
+#endif
+    class MarshalNonBlittable<T> : MarshalGeneric<T>
     {
         private static readonly new Type AbiType = typeof(T).IsEnum ? Enum.GetUnderlyingType(typeof(T)) : MarshalGeneric<T>.AbiType;
 
@@ -560,7 +640,6 @@ namespace WinRT
             {
                 return m;
             }
-
             bool success = false;
             try
             {
@@ -722,7 +801,12 @@ namespace WinRT
         }
     }
 
-    public class MarshalInterfaceHelper<T>
+#if EMBED
+    internal
+#else
+    public
+#endif
+    class MarshalInterfaceHelper<T>
     {
         public struct MarshalerArray
         {
@@ -752,7 +836,6 @@ namespace WinRT
             {
                 return m;
             }
-
             bool success = false;
             try
             {
@@ -919,7 +1002,12 @@ namespace WinRT
         }
     }
 
-    public struct MarshalInterface<T>
+#if EMBED
+    internal
+#else
+    public
+#endif
+    struct MarshalInterface<T>
     {
         private static readonly Type HelperType = typeof(T).GetHelperType();
         private static Func<T, IObjectReference> _ToAbi;
@@ -1045,7 +1133,12 @@ namespace WinRT
         }
     }
 
-    static public class MarshalInspectable<T>
+#if EMBED
+    internal
+#else 
+    public
+#endif
+    static class MarshalInspectable<T>
     {
         public static IObjectReference CreateMarshaler(T o, bool unwrapObject = true)
         {
@@ -1060,7 +1153,7 @@ namespace WinRT
             }
             var publicType = o.GetType();
             Type helperType = Projections.FindCustomHelperTypeMapping(publicType, true);
-            if(helperType != null)
+            if (helperType != null)
             {
                 var parms = new[] { Expression.Parameter(typeof(object), "arg") };
                 var createMarshaler = Expression.Lambda<Func<object, IObjectReference>>(
@@ -1068,10 +1161,8 @@ namespace WinRT
                         new[] { Expression.Convert(parms[0], publicType) }), parms).Compile();
                 return createMarshaler(o);
             }
-            using (var ccw = ComWrappersSupport.CreateCCWForObject(o))
-            {
-                return ccw.As<IInspectable.Vftbl>(IInspectable.IID);
-            }
+
+            return ComWrappersSupport.CreateCCWForObject<IInspectable.Vftbl>(o, IInspectable.IID);
         }
 
         public static IntPtr GetAbi(IObjectReference objRef) =>
@@ -1083,24 +1174,24 @@ namespace WinRT
             {
                 return default;
             }
-            using var objRef = ObjectReference<IUnknownVftbl>.FromAbi(ptr);
-            using var unknownObjRef = objRef.As<IUnknownVftbl>(IUnknownVftbl.IID);
-            if (unknownObjRef.IsReferenceToManagedObject)
+
+            IntPtr iunknownPtr = IntPtr.Zero;
+            try
             {
-                return (T) ComWrappersSupport.FindObject<object>(unknownObjRef.ThisPtr);
-            }
-            else if (Projections.TryGetMarshalerTypeForProjectedRuntimeClass<T>(objRef, out Type type))
-            {
-                var fromAbiMethod = type.GetMethod("FromAbi", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
-                if (fromAbiMethod is null)
+                Guid iid_iunknown = IUnknownVftbl.IID;
+                Marshal.QueryInterface(ptr, ref iid_iunknown, out iunknownPtr);
+                if (IUnknownVftbl.IsReferenceToManagedObject(iunknownPtr))
                 {
-                    throw new MissingMethodException();
+                    return (T)ComWrappersSupport.FindObject<object>(iunknownPtr);
                 }
-                return (T) fromAbiMethod.Invoke(null, new object[] { ptr });
+                else
+                {
+                    return ComWrappersSupport.CreateRcwForComObject<T>(ptr);
+                }
             }
-            else
+            finally
             {
-                return ComWrappersSupport.CreateRcwForComObject<T>(ptr);
+                DisposeAbi(iunknownPtr);
             }
         }
 
@@ -1143,7 +1234,12 @@ namespace WinRT
 
     }
 
-    static public class MarshalDelegate
+#if EMBED
+    internal
+#else
+    public
+#endif
+    static class MarshalDelegate
     {
         public static IObjectReference CreateMarshaler(object o, Guid delegateIID, bool unwrapObject = true)
         {
@@ -1156,14 +1252,17 @@ namespace WinRT
             {
                 return objRef.As<global::WinRT.Interop.IDelegateVftbl>(delegateIID);
             }
-            using (var ccw = ComWrappersSupport.CreateCCWForObject(o))
-            {
-                return ccw.As<global::WinRT.Interop.IDelegateVftbl>(delegateIID);
-            }
+
+            return ComWrappersSupport.CreateCCWForObject<global::WinRT.Interop.IDelegateVftbl>(o, delegateIID);
         }
     }
 
-    public class Marshaler<T>
+#if EMBED
+    internal
+#else 
+    public
+#endif
+    class Marshaler<T>
     {
         static Marshaler()
         {

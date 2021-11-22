@@ -899,7 +899,8 @@ namespace cswinrt
         Projected,
         CCW,
         ABI,
-        NonProjected
+        NonProjected,
+        StaticAbiClass
     };
 
     std::string get_mapped_element_type(ElementType elementType)

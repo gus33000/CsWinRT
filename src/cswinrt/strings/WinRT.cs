@@ -1,11 +1,14 @@
-﻿using System;
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Diagnostics;
 using WinRT.Interop;
 
 #pragma warning disable 0169 // The field 'xxx' is never used
@@ -22,7 +25,7 @@ namespace WinRT
         }
     }
 
-    internal class Platform
+    internal sealed class Platform
     {
         [DllImport("api-ms-win-core-com-l1-1-0.dll")]
         internal static extern unsafe int CoCreateInstance(ref Guid clsid, IntPtr outer, uint clsContext, ref Guid iid, IntPtr* instance);
@@ -85,7 +88,7 @@ namespace WinRT
         public IntPtr Vftbl;
     }
 
-    internal unsafe class DllModule
+    internal unsafe sealed class DllModule
     {
         readonly string _fileName;
         readonly IntPtr _moduleHandle;
@@ -113,12 +116,12 @@ namespace WinRT
             }
         }
 
-        static unsafe bool TryCreate(string fileName, out DllModule module)
+        private static unsafe bool TryCreate(string fileName, out DllModule module)
         {
             // Explicitly look for module in the same directory as this one, and
             // use altered search path to ensure any dependencies in the same directory are found.
             var moduleHandle = Platform.LoadLibraryExW(System.IO.Path.Combine(_currentModuleDirectory, fileName), IntPtr.Zero, /* LOAD_WITH_ALTERED_SEARCH_PATH */ 8);
-#if !NETSTANDARD2_0 && !NETCOREAPP2_0
+#if NET
             if (moduleHandle == IntPtr.Zero)
             {
                 NativeLibrary.TryLoad(fileName, Assembly.GetExecutingAssembly(), null, out moduleHandle);
@@ -144,7 +147,7 @@ namespace WinRT
             return true;
         }
 
-        DllModule(string fileName, IntPtr moduleHandle, void* getActivationFactory)
+        private DllModule(string fileName, IntPtr moduleHandle, void* getActivationFactory)
         {
             _fileName = fileName;
             _moduleHandle = moduleHandle;
@@ -159,16 +162,27 @@ namespace WinRT
 
         public unsafe (ObjectReference<IActivationFactoryVftbl> obj, int hr) GetActivationFactory(string runtimeClassId)
         {
-            IntPtr instancePtr;
-            var hstrRuntimeClassId = MarshalString.CreateMarshaler(runtimeClassId);
+            IntPtr instancePtr = IntPtr.Zero;
             try
             {
-                int hr = _GetActivationFactory(MarshalString.GetAbi(hstrRuntimeClassId), &instancePtr);
-                return (hr == 0 ? ObjectReference<IActivationFactoryVftbl>.Attach(ref instancePtr) : null, hr);
+                MarshalString.Pinnable __runtimeClassId = new(runtimeClassId);
+                fixed (void* ___runtimeClassId = __runtimeClassId)
+                {
+                    int hr = _GetActivationFactory(MarshalString.GetAbi(ref __runtimeClassId), &instancePtr);
+                    if (hr == 0)
+                    {
+                        var objRef = ComWrappersSupport.GetObjectReferenceForInterface<IActivationFactoryVftbl>(instancePtr);
+                        return (objRef, hr);
+                    }
+                    else
+                    {
+                        return (null, hr);
+                    }
+                }
             }
             finally
             {
-                hstrRuntimeClassId.Dispose();
+                MarshalInspectable<object>.DisposeAbi(instancePtr);
             }
         }
 
@@ -186,32 +200,16 @@ namespace WinRT
         }
     }
 
-    internal class WeakLazy<T> where T : class, new()
-    {
-        WeakReference<T> _instance = new WeakReference<T>(null);
-        public T Value
-        {
-            get
-            {
-                lock (_instance)
-                {
-                    T value;
-                    if (!_instance.TryGetTarget(out value))
-                    {
-                        value = new T();
-                        _instance.SetTarget(value);
-                    }
-                    return value;
-                }
-            }
-        }
-    }
-
-    internal class WinrtModule
+    internal sealed class WinrtModule
     {
         readonly IntPtr _mtaCookie;
-        static Lazy<WinrtModule> _instance = new Lazy<WinrtModule>();
-        public static WinrtModule Instance => _instance.Value;
+        volatile static WinrtModule _instance;
+        private static WinrtModule MakeWinRTModule()
+        {
+            global::System.Threading.Interlocked.CompareExchange(ref _instance, new WinrtModule(), null);
+            return _instance;
+        }
+        public static WinrtModule Instance => _instance ?? MakeWinRTModule();
 
         public unsafe WinrtModule()
         {
@@ -223,7 +221,7 @@ namespace WinRT
         public static unsafe (IntPtr instancePtr, int hr) GetActivationFactory(IntPtr hstrRuntimeClassId)
         {
             var module = Instance; // Ensure COM is initialized
-            Guid iid = typeof(IActivationFactoryVftbl).GUID;
+            Guid iid = IActivationFactoryVftbl.IID;
             IntPtr instancePtr;
             int hr = Platform.RoGetActivationFactory(hstrRuntimeClassId, ref iid, &instancePtr);
             return (hr == 0 ? instancePtr : IntPtr.Zero, hr);
@@ -231,18 +229,28 @@ namespace WinRT
 
         public static unsafe (ObjectReference<IActivationFactoryVftbl> obj, int hr) GetActivationFactory(string runtimeClassId)
         {
-            // TODO: "using var" with ref struct and remove the try/catch below
-            var m = MarshalString.CreateMarshaler(runtimeClassId);
+            IntPtr instancePtr = IntPtr.Zero;
             try
             {
-                IntPtr instancePtr;
-                int hr;
-                (instancePtr, hr) = GetActivationFactory(MarshalString.GetAbi(m));
-                return (hr == 0 ? ObjectReference<IActivationFactoryVftbl>.Attach(ref instancePtr) : null, hr);
+                MarshalString.Pinnable __runtimeClassId = new(runtimeClassId);
+                fixed (void* ___runtimeClassId = __runtimeClassId)
+                {
+                    int hr;
+                    (instancePtr, hr) = GetActivationFactory(MarshalString.GetAbi(ref __runtimeClassId));
+                    if (hr == 0)
+                    {
+                        var objRef = ComWrappersSupport.GetObjectReferenceForInterface<IActivationFactoryVftbl>(instancePtr);
+                        return (objRef, hr);
+                    }
+                    else
+                    {
+                        return (null, hr);
+                    }
+                }
             }
             finally
             {
-                m.Dispose();
+                MarshalInspectable<object>.DisposeAbi(instancePtr);
             }
         }
 
@@ -254,7 +262,7 @@ namespace WinRT
 
     internal class BaseActivationFactory
     {
-        private ObjectReference<IActivationFactoryVftbl> _IActivationFactory;
+        private readonly ObjectReference<IActivationFactoryVftbl> _IActivationFactory;
 
         public ObjectReference<IActivationFactoryVftbl> Value { get => _IActivationFactory; }
 
@@ -292,7 +300,7 @@ namespace WinRT
             Marshal.ThrowExceptionForHR(_IActivationFactory.Vftbl.ActivateInstance(_IActivationFactory.ThisPtr, &instancePtr));
             try
             {
-                return ComWrappersSupport.GetObjectReferenceForInterface(instancePtr).As<I>();
+                return ComWrappersSupport.GetObjectReferenceForInterface<I>(instancePtr);
             }
             finally
             {
@@ -304,15 +312,15 @@ namespace WinRT
         public IObjectReference _As(Guid iid) => _IActivationFactory.As<WinRT.Interop.IUnknownVftbl>(iid);
     }
 
-    internal class ActivationFactory<T> : BaseActivationFactory
+    internal sealed class ActivationFactory<T> : BaseActivationFactory
     {
         public ActivationFactory() : base(typeof(T).Namespace, typeof(T).FullName) { }
 
-        static WeakLazy<ActivationFactory<T>> _factory = new WeakLazy<ActivationFactory<T>>();
-        public new static I AsInterface<I>() => _factory.Value.Value.AsInterface<I>();
-        public static ObjectReference<I> As<I>() => _factory.Value._As<I>();
-        public static IObjectReference As(Guid iid) => _factory.Value._As(iid);
-        public static ObjectReference<I> ActivateInstance<I>() => _factory.Value._ActivateInstance<I>();
+        static readonly ActivationFactory<T> _factory = new ActivationFactory<T>();
+        public static new I AsInterface<I>() => _factory.Value.AsInterface<I>();
+        public static ObjectReference<I> As<I>() => _factory._As<I>();
+        public static IObjectReference As(Guid iid) => _factory._As(iid);
+        public static ObjectReference<I> ActivateInstance<I>() => _factory._ActivateInstance<I>();
     }
 
     internal class ComponentActivationFactory : global::WinRT.Interop.IActivationFactory
@@ -334,6 +342,249 @@ namespace WinRT
 
 #pragma warning disable CA2002
 
+    // Registration state and delegate cached separately to survive EventSource garbage collection
+    // and to prevent the generated event delegate from impacting the lifetime of the
+    // event source.
+    internal abstract class State : IDisposable
+    {
+        public EventRegistrationToken token;
+        public System.Delegate del;
+        public System.Delegate eventInvoke;
+        private bool disposedValue;
+        private readonly IntPtr obj;
+        private readonly int index;
+        private readonly System.WeakReference<State> cacheEntry;
+        private IntPtr eventInvokePtr;
+        private IntPtr referenceTrackerTargetPtr;
+
+        protected State(IntPtr obj, int index)
+        {
+            this.obj = obj;
+            this.index = index;
+            eventInvoke = GetEventInvoke();
+            cacheEntry = new System.WeakReference<State>(this);
+        }
+
+        // The lifetime of this object is managed by the delegate / eventInvoke
+        // through its target reference to it.  Once the delegate no longer has
+        // any references, this object will also no longer have any references.
+        ~State()
+        {
+            Dispose(false);
+        }
+
+        // Allows to retrieve a singleton like weak reference to use
+        // with the cache to allow for proper removal with comparision.
+        public System.WeakReference<State> GetWeakReferenceForCache()
+        {
+            return cacheEntry;
+        }
+
+        protected abstract System.Delegate GetEventInvoke();
+
+        protected virtual void Dispose(bool disposing)
+        {
+            // Uses the dispose pattern to ensure we only remove
+            // from the cache once: either via unsubscribe or via
+            // the finalizer.
+            if (!disposedValue)
+            {
+                Cache.Remove(obj, index, cacheEntry);
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        public void InitalizeReferenceTracking(IntPtr ptr)
+        {
+            eventInvokePtr = ptr;
+            Guid iid = IReferenceTrackerTargetVftbl.IID;
+            int hr = Marshal.QueryInterface(ptr, ref iid, out referenceTrackerTargetPtr);
+            if (hr != 0)
+            {
+                referenceTrackerTargetPtr = default;
+            }
+            else
+            {
+                // We don't want to keep ourselves alive and as long as this object
+                // is alive, the CCW still exists.
+                Marshal.Release(referenceTrackerTargetPtr);
+            }
+        }
+
+        public unsafe bool HasComReferences()
+        {
+            if (eventInvokePtr != default)
+            {
+                IUnknownVftbl vftblIUnknown = **(IUnknownVftbl**)eventInvokePtr;
+                vftblIUnknown.AddRef(eventInvokePtr);
+                uint comRefCount = vftblIUnknown.Release(eventInvokePtr);
+                if (comRefCount != 0)
+                {
+                    return true;
+                }
+            }
+
+            if (referenceTrackerTargetPtr != default)
+            {
+                IReferenceTrackerTargetVftbl vftblReferenceTracker = **(IReferenceTrackerTargetVftbl**)referenceTrackerTargetPtr;
+                vftblReferenceTracker.AddRefFromReferenceTracker(referenceTrackerTargetPtr);
+                uint refTrackerCount = vftblReferenceTracker.ReleaseFromReferenceTracker(referenceTrackerTargetPtr);
+                if (refTrackerCount != 0)
+                {
+                    // Note we can't tell if the reference tracker ref is pegged or not, so this is best effort where if there
+                    // are any reference tracker references, we assume the event has references.
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
+    internal sealed class Cache
+    {
+        private Cache(IWeakReference target, int index, System.WeakReference<State> state)
+        {
+            this.target = target;
+            SetState(index, state);
+        }
+
+        private IWeakReference target;
+        private readonly ConcurrentDictionary<int, System.WeakReference<State>> states = new ConcurrentDictionary<int, System.WeakReference<State>>();
+
+        private static readonly ReaderWriterLockSlim cachesLock = new ReaderWriterLockSlim();
+        private static readonly ConcurrentDictionary<IntPtr, Cache> caches = new ConcurrentDictionary<IntPtr, Cache>();
+
+        private Cache Update(IWeakReference target, int index, System.WeakReference<State> state)
+        {
+            // If target no longer exists, destroy cache
+            lock (this)
+            {
+                using var resolved = this.target.Resolve(typeof(IUnknownVftbl).GUID);
+                if (resolved == null)
+                {
+                    this.target = target;
+                    states.Clear();
+                }
+            }
+            SetState(index, state);
+            return this;
+        }
+
+        private System.WeakReference<State> GetState(int index)
+        {
+            // If target no longer exists, destroy cache
+            lock (this)
+            {
+                using var resolved = this.target.Resolve(typeof(IUnknownVftbl).GUID);
+                if (resolved == null)
+                {
+                    return null;
+                }
+            }
+
+            if (states.TryGetValue(index, out var weakState))
+            {
+                return weakState;
+            }
+            return null;
+        }
+
+        private void SetState(int index, System.WeakReference<State> state)
+        {
+            states[index] = state;
+        }
+
+        public static void Create(IObjectReference obj, int index, System.WeakReference<State> state)
+        {
+            // If event source implements weak reference support, track event registrations so that
+            // unsubscribes will work across garbage collections.  Note that most static/factory classes
+            // do not implement IWeakReferenceSource, so static codegen caching approach is also used.
+            IWeakReference target = null;
+#if !NET
+                try
+                {
+                    var weakRefSource = (IWeakReferenceSource)typeof(IWeakReferenceSource).GetHelperType().GetConstructor(new[] { typeof(IObjectReference) }).Invoke(new object[] { obj });
+                    if (weakRefSource == null)
+                    {
+                        return;
+                    }
+                    target = weakRefSource.GetWeakReference();
+                }
+                catch(Exception)
+                {
+                    return;
+                }
+#else
+            int hr = obj.TryAs<IUnknownVftbl>(typeof(IWeakReferenceSource).GUID, out var weakRefSource);
+            if (hr != 0)
+            {
+                return;
+            }
+
+            target = ABI.WinRT.Interop.IWeakReferenceSourceMethods.GetWeakReference(weakRefSource);
+#endif
+
+            cachesLock.EnterReadLock();
+            try
+            {
+                caches.AddOrUpdate(obj.ThisPtr,
+                    (IntPtr ThisPtr) => new Cache(target, index, state),
+                    (IntPtr ThisPtr, Cache cache) => cache.Update(target, index, state));
+            }
+            finally
+            {
+                cachesLock.ExitReadLock();
+            }
+        }
+
+        public static System.WeakReference<State> GetState(IObjectReference obj, int index)
+        {
+            if (caches.TryGetValue(obj.ThisPtr, out var cache))
+            {
+                return cache.GetState(index);
+            }
+
+            return null;
+        }
+
+        public static void Remove(IntPtr thisPtr, int index, System.WeakReference<State> state)
+        {
+            if (caches.TryGetValue(thisPtr, out var cache))
+            {
+#if !NET
+                    // https://devblogs.microsoft.com/pfxteam/little-known-gems-atomic-conditional-removals-from-concurrentdictionary/
+                    ((ICollection<KeyValuePair<int, System.WeakReference<State>>>)cache.states).Remove(
+                        new KeyValuePair<int, System.WeakReference<State>>(index, state));
+#else
+                cache.states.TryRemove(new KeyValuePair<int, System.WeakReference<State>>(index, state));
+#endif
+                // using double-checked lock idiom
+                if (cache.states.IsEmpty)
+                {
+                    cachesLock.EnterWriteLock();
+                    try
+                    {
+                        if (cache.states.IsEmpty)
+                        {
+                            caches.TryRemove(thisPtr, out var _);
+                        }
+                    }
+                    finally
+                    {
+                        cachesLock.ExitWriteLock();
+                    }
+                }
+            }
+        }
+    }
+
     internal unsafe abstract class EventSource<TDelegate>
         where TDelegate : class, MulticastDelegate
     {
@@ -341,111 +592,6 @@ namespace WinRT
         protected readonly int _index;
         readonly delegate* unmanaged[Stdcall]<System.IntPtr, System.IntPtr, out WinRT.EventRegistrationToken, int> _addHandler;
         readonly delegate* unmanaged[Stdcall]<System.IntPtr, WinRT.EventRegistrationToken, int> _removeHandler;
-
-        // Registration state and delegate cached separately to survive EventSource garbage collection
-        // and to prevent the generated event delegate from impacting the lifetime of the
-        // event source.
-        protected abstract class State : IDisposable
-        {
-            public EventRegistrationToken token;
-            public TDelegate del;
-            public System.Delegate eventInvoke;
-            private bool disposedValue;
-            private readonly IntPtr obj;
-            private readonly int index;
-            private readonly System.WeakReference<State> cacheEntry;
-            private IntPtr eventInvokePtr;
-            private IntPtr referenceTrackerTargetPtr;
-
-            protected State(IntPtr obj, int index)
-            {
-                this.obj = obj;
-                this.index = index;
-                eventInvoke = GetEventInvoke();
-                cacheEntry = new System.WeakReference<State>(this);
-            }
-
-            // The lifetime of this object is managed by the delegate / eventInvoke
-            // through its target reference to it.  Once the delegate no longer has
-            // any references, this object will also no longer have any references.
-            ~State()
-            {
-                Dispose(false);
-            }
-
-            // Allows to retrieve a singleton like weak reference to use
-            // with the cache to allow for proper removal with comparision.
-            public System.WeakReference<State> GetWeakReferenceForCache()
-            {
-                return cacheEntry;
-            }
-
-            protected abstract System.Delegate GetEventInvoke();
-
-            protected virtual void Dispose(bool disposing)
-            {
-                // Uses the dispose pattern to ensure we only remove
-                // from the cache once: either via unsubscribe or via
-                // the finalizer.
-                if (!disposedValue)
-                {
-                    Cache.Remove(obj, index, cacheEntry);
-                    disposedValue = true;
-                }
-            }
-
-            public void Dispose()
-            {
-                Dispose(true);
-                GC.SuppressFinalize(this);
-            }
-
-            public void InitalizeReferenceTracking(IntPtr ptr)
-            {
-                eventInvokePtr = ptr;
-                Guid iid = typeof(IReferenceTrackerTargetVftbl).GUID;
-                int hr = Marshal.QueryInterface(ptr, ref iid, out referenceTrackerTargetPtr);
-                if (hr != 0)
-                {
-                    referenceTrackerTargetPtr = default;
-                }
-                else
-                {
-                    // We don't want to keep ourselves alive and as long as this object
-                    // is alive, the CCW still exists.
-                    Marshal.Release(referenceTrackerTargetPtr);
-                }
-            }
-
-            public bool HasComReferences()
-            {
-                if (eventInvokePtr != default)
-                {
-                    IUnknownVftbl vftblIUnknown = **(IUnknownVftbl**)eventInvokePtr;
-                    vftblIUnknown.AddRef(eventInvokePtr);
-                    uint comRefCount = vftblIUnknown.Release(eventInvokePtr);
-                    if (comRefCount != 0)
-                    {
-                        return true;
-                    }
-                }
-
-                if (referenceTrackerTargetPtr != default)
-                {
-                    IReferenceTrackerTargetVftbl vftblReferenceTracker = **(IReferenceTrackerTargetVftbl**)referenceTrackerTargetPtr;
-                    vftblReferenceTracker.AddRefFromReferenceTracker(referenceTrackerTargetPtr);
-                    uint refTrackerCount = vftblReferenceTracker.ReleaseFromReferenceTracker(referenceTrackerTargetPtr);
-                    if (refTrackerCount != 0)
-                    {
-                        // Note we can't tell if the reference tracker ref is pegged or not, so this is best effort where if there
-                        // are any reference tracker references, we assume the event has references.
-                        return true;
-                    }
-                }
-
-                return false;
-            }
-        }
         protected System.WeakReference<State> _state;
 
         protected EventSource(IObjectReference obj,
@@ -524,144 +670,11 @@ namespace WinRT
             }
         }
 
-        void UnsubscribeFromNative(State state)
+        private void UnsubscribeFromNative(State state)
         {
             ExceptionHelpers.ThrowExceptionForHR(_removeHandler(_obj.ThisPtr, state.token));
             state.Dispose();
             _state = null;
-        }
-
-        private class Cache
-        {
-            Cache(IWeakReference target, int index, System.WeakReference<State> state)
-            {
-                this.target = target;
-                SetState(index, state);
-            }
-
-            private IWeakReference target;
-            private readonly ConcurrentDictionary<int, System.WeakReference<State>> states = new ConcurrentDictionary<int, System.WeakReference<State>>();
-
-            private static readonly ReaderWriterLockSlim cachesLock = new ReaderWriterLockSlim();
-            private static readonly ConcurrentDictionary<IntPtr, Cache> caches = new ConcurrentDictionary<IntPtr, Cache>();
-
-
-            private Cache Update(IWeakReference target, int index, System.WeakReference<State> state)
-            {
-                // If target no longer exists, destroy cache
-                lock (this)
-                {
-                    using var resolved = this.target.Resolve(typeof(IUnknownVftbl).GUID);
-                    if (resolved == null)
-                    {
-                        this.target = target;
-                        states.Clear();
-                    }
-                }
-                SetState(index, state);
-                return this;
-            }
-
-            private System.WeakReference<State> GetState(int index)
-            {
-                // If target no longer exists, destroy cache
-                lock (this)
-                {
-                    using var resolved = this.target.Resolve(typeof(IUnknownVftbl).GUID);
-                    if (resolved == null)
-                    {
-                        return null;
-                    }
-                }
-
-                if (states.TryGetValue(index, out var weakState))
-                {
-                    return weakState;
-                }
-                return null;
-            }
-
-            private void SetState(int index, System.WeakReference<State> state)
-            {
-                states[index] = state;
-            }
-
-            public static void Create(IObjectReference obj, int index, System.WeakReference<State> state)
-            {
-                // If event source implements weak reference support, track event registrations so that
-                // unsubscribes will work across garbage collections.  Note that most static/factory classes
-                // do not implement IWeakReferenceSource, so static codegen caching approach is also used.
-                IWeakReference target = null;
-                try
-                {
-#if NETSTANDARD2_0
-                    var weakRefSource = (IWeakReferenceSource)typeof(IWeakReferenceSource).GetHelperType().GetConstructor(new[] { typeof(IObjectReference) }).Invoke(new object[] { obj });
-#else
-                    var weakRefSource = ((object)new WinRT.IInspectable(obj)) as IWeakReferenceSource;
-#endif
-                    if (weakRefSource == null)
-                    {
-                        return;
-                    }
-                    target = weakRefSource.GetWeakReference();
-                }
-                catch (Exception)
-                {
-                    return;
-                }
-
-                cachesLock.EnterReadLock();
-                try
-                {
-                    caches.AddOrUpdate(obj.ThisPtr,
-                        (IntPtr ThisPtr) => new Cache(target, index, state),
-                        (IntPtr ThisPtr, Cache cache) => cache.Update(target, index, state));
-                }
-                finally
-                {
-                    cachesLock.ExitReadLock();
-                }
-            }
-
-            public static System.WeakReference<State> GetState(IObjectReference obj, int index)
-            {
-                if (caches.TryGetValue(obj.ThisPtr, out var cache))
-                {
-                    return cache.GetState(index);
-                }
-
-                return null;
-            }
-
-            public static void Remove(IntPtr thisPtr, int index, System.WeakReference<State> state)
-            {
-                if (caches.TryGetValue(thisPtr, out var cache))
-                {
-#if NETSTANDARD2_0
-                    // https://devblogs.microsoft.com/pfxteam/little-known-gems-atomic-conditional-removals-from-concurrentdictionary/
-                    ((ICollection<KeyValuePair<int, System.WeakReference<State>>>)cache.states).Remove(
-                        new KeyValuePair<int, System.WeakReference<State>>(index, state));
-#else
-                    cache.states.TryRemove(new KeyValuePair<int, System.WeakReference<State>>(index, state));
-#endif
-                    // using double-checked lock idiom
-                    if (cache.states.IsEmpty)
-                    {
-                        cachesLock.EnterWriteLock();
-                        try
-                        {
-                            if (cache.states.IsEmpty)
-                            {
-                                caches.TryRemove(thisPtr, out var _);
-                            }
-                        }
-                        finally
-                        {
-                            cachesLock.ExitWriteLock();
-                        }
-                    }
-                }
-            }
         }
     }
 
@@ -697,7 +710,7 @@ namespace WinRT
             {
                 System.EventHandler<T> handler = (System.Object obj, T e) =>
                 {
-                    var localDel = del;
+                    var localDel = (System.EventHandler<T>) del;
                     if (localDel != null)
                         localDel.Invoke(obj, e);
                 };
@@ -835,7 +848,7 @@ namespace WinRT
 namespace System.Runtime.CompilerServices
 {
     [AttributeUsage(AttributeTargets.Method)]
-    internal class ModuleInitializerAttribute : Attribute { }
+    internal sealed class ModuleInitializerAttribute : Attribute { }
 }
 
 namespace WinRT

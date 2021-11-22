@@ -1,14 +1,15 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using Microsoft.UI.Xaml.Interop;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using WinRT;
 using WinRT.Interop;
-using System.Diagnostics;
-using Microsoft.UI.Xaml.Interop;
 
 #pragma warning disable 0169 // warning CS0169: The field '...' is never used
 #pragma warning disable 0649 // warning CS0169: Field '...' is never assigned to
@@ -53,7 +54,7 @@ namespace ABI.System.Collections.Generic
     interface IEnumerable<T> : global::System.Collections.Generic.IEnumerable<T>, global::Windows.Foundation.Collections.IIterable<T>
     {
         public static IObjectReference CreateMarshaler(global::System.Collections.Generic.IEnumerable<T> obj) =>
-            obj is null ? null : ComWrappersSupport.CreateCCWForObject(obj).As<Vftbl>(GuidGenerator.GetIID(typeof(IEnumerable<T>)));
+            obj is null ? null : ComWrappersSupport.CreateCCWForObject<Vftbl>(obj, GuidGenerator.GetIID(typeof(IEnumerable<T>)));
 
         public static IntPtr GetAbi(IObjectReference objRef) =>
             objRef?.ThisPtr ?? IntPtr.Zero;
@@ -68,7 +69,7 @@ namespace ABI.System.Collections.Generic
 
         public static string GetGuidSignature() => GuidGenerator.GetSignature(typeof(IEnumerable<T>));
 
-        public class FromAbiHelper : global::System.Collections.Generic.IEnumerable<T>
+        public sealed class FromAbiHelper : global::System.Collections.Generic.IEnumerable<T>
         {
             private readonly global::System.Collections.Generic.IEnumerable<T> _iterable;
 
@@ -183,16 +184,26 @@ namespace ABI.System.Collections.Generic
         global::System.Collections.Generic.IEnumerator<T> global::System.Collections.Generic.IEnumerable<T>.GetEnumerator() => _FromIterable((IWinRTObject)this).GetEnumerator();
         IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
-    public static class IEnumerable_Delegates
+#if EMBED
+    internal
+#else
+    public
+#endif
+    static class IEnumerable_Delegates
     {
         public unsafe delegate int First_0(IntPtr thisPtr, out IntPtr __return_value__);
     }
 
     [Guid("6A79E863-4300-459A-9966-CBB660963EE1")]
-    public class IEnumerator<T> : global::System.Collections.Generic.IEnumerator<T>, global::Windows.Foundation.Collections.IIterator<T>
+#if EMBED
+    internal
+#else
+    public
+#endif 
+    class IEnumerator<T> : global::System.Collections.Generic.IEnumerator<T>, global::Windows.Foundation.Collections.IIterator<T>
     {
         public static IObjectReference CreateMarshaler(global::System.Collections.Generic.IEnumerator<T> obj) =>
-            obj is null ? null : ComWrappersSupport.CreateCCWForObject(obj).As<Vftbl>(GuidGenerator.GetIID(typeof(IEnumerator<T>)));
+            obj is null ? null : ComWrappersSupport.CreateCCWForObject<Vftbl>(obj, GuidGenerator.GetIID(typeof(IEnumerator<T>)));
 
         public static IntPtr GetAbi(IObjectReference objRef) =>
             objRef?.ThisPtr ?? IntPtr.Zero;
@@ -638,7 +649,13 @@ namespace ABI.System.Collections.Generic
         public T Current => _FromIterator.Current;
         object IEnumerator.Current => Current;
     }
-    public static class IEnumerator_Delegates
+
+#if EMBED
+    internal
+#else
+    public
+#endif
+    static class IEnumerator_Delegates
     {
         public unsafe delegate int MoveNext_2(IntPtr thisPtr, out byte __return_value__);
         public unsafe delegate int GetMany_3(IntPtr thisPtr, int __itemsSize, IntPtr items, out uint __return_value__);

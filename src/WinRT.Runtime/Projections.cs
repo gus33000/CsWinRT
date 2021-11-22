@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -13,7 +16,12 @@ using Windows.Foundation.Collections;
 
 namespace WinRT
 {
-    public static class Projections
+#if EMBED
+    internal
+#else 
+    public
+#endif
+    static class Projections
     {
         private static readonly ReaderWriterLockSlim rwlock = new ReaderWriterLockSlim();
         private static readonly Dictionary<Type, Type> CustomTypeToHelperTypeMappings = new Dictionary<Type, Type>();

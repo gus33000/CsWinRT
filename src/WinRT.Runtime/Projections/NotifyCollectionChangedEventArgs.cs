@@ -1,9 +1,10 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 using ABI.Microsoft.UI.Xaml.Interop;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
-using System.Text;
 using WinRT;
 using WinRT.Interop;
 
@@ -11,7 +12,7 @@ namespace ABI.Microsoft.UI.Xaml.Interop
 {
     [global::WinRT.ObjectReferenceWrapper(nameof(_obj))]
     [Guid("4CF68D33-E3F2-4964-B85E-945B4F7E2F21")]
-    internal unsafe class INotifyCollectionChangedEventArgs
+    internal sealed unsafe class INotifyCollectionChangedEventArgs
     {
         [Guid("4CF68D33-E3F2-4964-B85E-945B4F7E2F21")]
         [StructLayout(LayoutKind.Sequential)]
@@ -110,7 +111,7 @@ namespace ABI.Microsoft.UI.Xaml.Interop
 
     [global::WinRT.ObjectReferenceWrapper(nameof(_obj))]
     [Guid("B30C3E3A-DF8D-44A5-9A38-7AC0D08CE63D")]
-    internal unsafe class WinRTNotifyCollectionChangedEventArgsRuntimeClassFactory
+    internal sealed unsafe class WinRTNotifyCollectionChangedEventArgsRuntimeClassFactory
     {
         [Guid("B30C3E3A-DF8D-44A5-9A38-7AC0D08CE63D")]
         [StructLayout(LayoutKind.Sequential)]
@@ -165,15 +166,21 @@ namespace ABI.System.Collections.Specialized
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
     [StructLayout(LayoutKind.Sequential)]
-    public struct NotifyCollectionChangedEventArgs
+#if EMBED
+    internal
+#else
+    public
+#endif
+    struct NotifyCollectionChangedEventArgs
     {
-        private static WeakLazy<ActivationFactory> _propertyChangedArgsFactory = new WeakLazy<ActivationFactory>();
-
-        private class ActivationFactory : BaseActivationFactory
+        private sealed class ActivationFactory : BaseActivationFactory
         {
             public ActivationFactory() : base("Windows.UI.Xaml.Interop", "Windows.UI.Xaml.Interop.NotifyCollectionChangedEventArgs")
             {
             }
+
+            internal static WinRTNotifyCollectionChangedEventArgsRuntimeClassFactory Instance = 
+                new ActivationFactory()._As<WinRTNotifyCollectionChangedEventArgsRuntimeClassFactory.Vftbl>();
         }
 
         public static IObjectReference CreateMarshaler(global::System.Collections.Specialized.NotifyCollectionChangedEventArgs value)
@@ -183,8 +190,7 @@ namespace ABI.System.Collections.Specialized
                 return null;
             }
 
-            WinRTNotifyCollectionChangedEventArgsRuntimeClassFactory factory = _propertyChangedArgsFactory.Value._As<WinRTNotifyCollectionChangedEventArgsRuntimeClassFactory.Vftbl>();
-            return factory.CreateInstanceWithAllParameters(value.Action, value.NewItems, value.OldItems, value.NewStartingIndex, value.OldStartingIndex, null, out _);
+            return ActivationFactory.Instance.CreateInstanceWithAllParameters(value.Action, value.NewItems, value.OldItems, value.NewStartingIndex, value.OldStartingIndex, null, out _);
         }
 
         public static IntPtr GetAbi(IObjectReference m) => m?.ThisPtr ?? IntPtr.Zero;
@@ -228,7 +234,8 @@ namespace ABI.System.Collections.Specialized
             {
                 return IntPtr.Zero;
             }
-            return CreateMarshaler(value).GetRef();
+            using var objRef = CreateMarshaler(value);
+            return objRef.GetRef();
         }
 
         public static void DisposeMarshaler(IObjectReference m) { m?.Dispose(); }
@@ -236,7 +243,7 @@ namespace ABI.System.Collections.Specialized
 
         public static string GetGuidSignature()
         {
-            return "rc(Microsoft.UI.Xaml.Interop.NotifyCollectionChangedEventArgs;{4cf68d33-e3f2-4964-b85e-945b4f7e2f21})";
+            return "rc(Windows.UI.Xaml.Interop.NotifyCollectionChangedEventArgs;{4cf68d33-e3f2-4964-b85e-945b4f7e2f21})";
         }
     }
 }

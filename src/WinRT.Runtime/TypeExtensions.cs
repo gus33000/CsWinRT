@@ -1,11 +1,18 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using System;
 using System.Collections.Concurrent;
 using System.Reflection;
 
 namespace WinRT
 {
-
-    public static class TypeExtensions
+#if EMBED
+    internal
+#else 
+    public
+#endif
+    static class TypeExtensions
     {
         private readonly static ConcurrentDictionary<Type, Type> HelperTypeCache = new ConcurrentDictionary<Type, Type>();
 

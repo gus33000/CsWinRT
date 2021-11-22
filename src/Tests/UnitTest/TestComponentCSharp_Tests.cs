@@ -1458,7 +1458,7 @@ namespace UnitTest
             Assert.NotNull(marshalCCW2);
         }
 
-#if !NETCOREAPP2_0
+#if NET
         [Fact]
         public void TestDelegateCCWMarshaler()
         {
@@ -2335,8 +2335,9 @@ namespace UnitTest
 
             public void CallProxyObject()
             {
-                // Call to the proxy object after the apartment is gone should throw.
-                Assert.ThrowsAny<System.Exception>(() => proxyObject2.Commands);
+                // Call to a proxy object which we internally use an agile reference
+                // to resolve after the apartment is gone should throw.
+                Assert.ThrowsAny<System.Exception>(() => proxyObject.Commands);
             }
 
             private Windows.UI.Popups.PopupMenu nonAgileObject, nonAgileObject2;

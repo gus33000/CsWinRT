@@ -1,13 +1,14 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using WinRT;
 using WinRT.Interop;
-using System.Diagnostics;
 
 #pragma warning disable 0169 // warning CS0169: The field '...' is never used
 #pragma warning disable 0649 // warning CS0169: Field '...' is never assigned to
@@ -35,7 +36,7 @@ namespace ABI.System.Collections.Generic
     interface IReadOnlyDictionary<K, V> : global::System.Collections.Generic.IReadOnlyDictionary<K, V>, global::Windows.Foundation.Collections.IMapView<K, V>
     {
         public static IObjectReference CreateMarshaler(global::System.Collections.Generic.IReadOnlyDictionary<K, V> obj) =>
-            obj is null ? null : ComWrappersSupport.CreateCCWForObject(obj).As<Vftbl>(GuidGenerator.GetIID(typeof(IReadOnlyDictionary<K, V>)));
+            obj is null ? null : ComWrappersSupport.CreateCCWForObject<Vftbl>(obj, GuidGenerator.GetIID(typeof(IReadOnlyDictionary<K, V>)));
 
         public static IntPtr GetAbi(IObjectReference objRef) =>
             objRef?.ThisPtr ?? IntPtr.Zero;
@@ -156,7 +157,7 @@ namespace ABI.System.Collections.Generic
             }
         }
 
-        public class FromAbiHelper : global::System.Collections.Generic.IReadOnlyDictionary<K, V>
+        public sealed class FromAbiHelper : global::System.Collections.Generic.IReadOnlyDictionary<K, V>
         {
             private readonly global::Windows.Foundation.Collections.IMapView<K, V> _mapView;
             private readonly global::System.Collections.Generic.IEnumerable<global::System.Collections.Generic.KeyValuePair<K, V>> _enumerable;
@@ -257,7 +258,7 @@ namespace ABI.System.Collections.Generic
 
         }
 
-        public class ToAbiHelper : global::Windows.Foundation.Collections.IMapView<K, V>
+        public sealed class ToAbiHelper : global::Windows.Foundation.Collections.IMapView<K, V>
         {
             private readonly global::System.Collections.Generic.IReadOnlyDictionary<K, V> _dictionary;
 
@@ -304,7 +305,7 @@ namespace ABI.System.Collections.Generic
 
             private sealed class ConstantSplittableMap : global::Windows.Foundation.Collections.IMapView<K, V>, global::System.Collections.Generic.IReadOnlyDictionary<K, V>
             {
-                private class KeyValuePairComparator : IComparer<global::System.Collections.Generic.KeyValuePair<K, V>>
+                private sealed class KeyValuePairComparator : IComparer<global::System.Collections.Generic.KeyValuePair<K, V>>
                 {
                     private static readonly IComparer<K> keyComparator = Comparer<K>.Default;
 
@@ -721,7 +722,13 @@ namespace ABI.System.Collections.Generic
         global::System.Collections.Generic.IEnumerator<global::System.Collections.Generic.KeyValuePair<K, V>> global::System.Collections.Generic.IEnumerable<global::System.Collections.Generic.KeyValuePair<K, V>>.GetEnumerator() => _FromMapView((IWinRTObject)this).GetEnumerator();
         IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
-    public static class IReadOnlyDictionary_Delegates
+
+#if EMBED
+    internal
+#else
+    public
+#endif
+    static class IReadOnlyDictionary_Delegates
     {
         public unsafe delegate int Split_3(IntPtr thisPtr, out IntPtr first, out IntPtr second);
     }
