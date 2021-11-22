@@ -509,28 +509,9 @@ namespace cswinrt
                     { "IGeneratorPositionHelperStatics" },
                 }
             },
-            { "Microsoft.UI.Xaml.Data",
-                {
-                    { "DataErrorsChangedEventArgs", "System.ComponentModel", "DataErrorsChangedEventArgs" },
-                    { "INotifyDataErrorInfo", "System.ComponentModel", "INotifyDataErrorInfo", true, true },
-                    { "INotifyPropertyChanged", "System.ComponentModel", "INotifyPropertyChanged" },
-                    { "PropertyChangedEventArgs", "System.ComponentModel", "PropertyChangedEventArgs" },
-                    { "PropertyChangedEventHandler", "System.ComponentModel", "PropertyChangedEventHandler" },
-                }
-            },
             { "Microsoft.UI.Xaml.Input",
                 {
                     { "ICommand", "System.Windows.Input", "ICommand", true }
-                }
-            },
-            { "Microsoft.UI.Xaml.Interop",
-                {
-                    { "IBindableIterable", "System.Collections", "IEnumerable", true, true },
-                    { "IBindableVector", "System.Collections", "IList", true, true },
-                    { "INotifyCollectionChanged", "System.Collections.Specialized", "INotifyCollectionChanged", true },
-                    { "NotifyCollectionChangedAction", "System.Collections.Specialized", "NotifyCollectionChangedAction" },
-                    { "NotifyCollectionChangedEventArgs", "System.Collections.Specialized", "NotifyCollectionChangedEventArgs", true },
-                    { "NotifyCollectionChangedEventHandler", "System.Collections.Specialized", "NotifyCollectionChangedEventHandler", true },
                 }
             },
             { "Microsoft.UI.Xaml.Media",
@@ -622,11 +603,26 @@ namespace cswinrt
                     { "IColorHelperStatics2" },
                 }
             },
+            { "Windows.UI.Xaml.Data",
+			    {
+			        { "DataErrorsChangedEventArgs", "System.ComponentModel", "DataErrorsChangedEventArgs" },
+			        { "INotifyDataErrorInfo", "System.ComponentModel", "INotifyDataErrorInfo", true, true },
+			        { "INotifyPropertyChanged", "System.ComponentModel", "INotifyPropertyChanged" },
+			        { "PropertyChangedEventArgs", "System.ComponentModel", "PropertyChangedEventArgs" },
+			        { "PropertyChangedEventHandler", "System.ComponentModel", "PropertyChangedEventHandler" },
+			    }
+            },
             // Temporary, until WinUI provides TypeName
             { "Windows.UI.Xaml.Interop",
                 {
+                    { "IBindableIterable", "System.Collections", "IEnumerable", true, true },
+                    { "IBindableVector", "System.Collections", "IList", true, true },
+                    { "INotifyCollectionChanged", "System.Collections.Specialized", "INotifyCollectionChanged", true },
+                    { "NotifyCollectionChangedAction", "System.Collections.Specialized", "NotifyCollectionChangedAction" },
+                    { "NotifyCollectionChangedEventArgs", "System.Collections.Specialized", "NotifyCollectionChangedEventArgs", true },
+                    { "NotifyCollectionChangedEventHandler", "System.Collections.Specialized", "NotifyCollectionChangedEventHandler", true },
                     { "TypeKind", "Windows.UI.Xaml.Interop", "TypeKind", true },
-                    { "TypeName", "System", "Type", true }
+                    { "TypeName", "System", "Type", true },
                 }
             },
         };

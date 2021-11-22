@@ -6,9 +6,9 @@ using System.Text;
 using WinRT;
 using WinRT.Interop;
 
-namespace ABI.Microsoft.UI.Xaml.Data
+namespace ABI.Windows.UI.Xaml.Data
 {
-    [Guid("63D0C952-396B-54F4-AF8C-BA8724A427BF")]
+    [Guid("4F33A9A0-5CF4-47A4-B16F-D7FAAF17457E")]
     [StructLayout(LayoutKind.Sequential)]
     internal unsafe struct IPropertyChangedEventArgsVftbl
     {
@@ -19,10 +19,10 @@ namespace ABI.Microsoft.UI.Xaml.Data
 
 
     [global::WinRT.ObjectReferenceWrapper(nameof(_obj))]
-    [Guid("7C0C27A8-0B41-5070-B160-FC9AE960A36C")]
+    [Guid("6DCC9C03-E0C7-4EEE-8EA9-37E3406EEB1C")]
     internal unsafe class WinRTPropertyChangedEventArgsRuntimeClassFactory
     {
-        [Guid("7C0C27A8-0B41-5070-B160-FC9AE960A36C")]
+        [Guid("6DCC9C03-E0C7-4EEE-8EA9-37E3406EEB1C")]
         [StructLayout(LayoutKind.Sequential)]
         public struct Vftbl
         {
@@ -79,7 +79,7 @@ namespace ABI.System.ComponentModel
 
         private class ActivationFactory : BaseActivationFactory
         {
-            public ActivationFactory() : base("Microsoft.UI.Xaml.Data", "Microsoft.UI.Xaml.Data.PropertyChangedEventArgs")
+            public ActivationFactory() : base("Windows.UI.Xaml.Data", "Windows.UI.Xaml.Data.PropertyChangedEventArgs")
             {
             }
         }
@@ -91,7 +91,7 @@ namespace ABI.System.ComponentModel
                 return null;
             }
 
-            ABI.Microsoft.UI.Xaml.Data.WinRTPropertyChangedEventArgsRuntimeClassFactory factory = _propertyChangedArgsFactory.Value._As<ABI.Microsoft.UI.Xaml.Data.WinRTPropertyChangedEventArgsRuntimeClassFactory.Vftbl>();
+            ABI.Windows.UI.Xaml.Data.WinRTPropertyChangedEventArgsRuntimeClassFactory factory = _propertyChangedArgsFactory.Value._As<ABI.Windows.UI.Xaml.Data.WinRTPropertyChangedEventArgsRuntimeClassFactory.Vftbl>();
             return factory.CreateInstance(value.PropertyName, null, out _);
         }
 
@@ -104,7 +104,7 @@ namespace ABI.System.ComponentModel
                 return null;
             }
 
-            using var args = ObjectReference<ABI.Microsoft.UI.Xaml.Data.IPropertyChangedEventArgsVftbl>.FromAbi(ptr);
+            using var args = ObjectReference<ABI.Windows.UI.Xaml.Data.IPropertyChangedEventArgsVftbl>.FromAbi(ptr);
             IntPtr propertyName = IntPtr.Zero;
             try
             {
@@ -137,7 +137,7 @@ namespace ABI.System.ComponentModel
 
         public static string GetGuidSignature()
         {
-            return "rc(Microsoft.UI.Xaml.Data.NotifyPropertyChangedEventArgs;{4f33a9a0-5cf4-47a4-b16f-d7faaf17457e})";
+            return "rc(Windows.UI.Xaml.Data.NotifyPropertyChangedEventArgs;{4f33a9a0-5cf4-47a4-b16f-d7faaf17457e})";
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup> 
-    <TargetFrameworks>netstandard2.0;net5.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net5.0</TargetFrameworks>
     <RootNamespace>WinRT</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>9</LangVersion>
@@ -46,8 +46,8 @@
   <!-- API Compat -->
   <PropertyGroup>
     <!-- Checks for both breaking changes and for new API additions. -->
-    <RunApiCompatForSrc>true</RunApiCompatForSrc>
-    <RunMatchingRefApiCompat>true</RunMatchingRefApiCompat>
+    <RunApiCompatForSrc>false</RunApiCompatForSrc>
+    <RunMatchingRefApiCompat>false</RunMatchingRefApiCompat>
     <ApiCompatEnforceOptionalRules>true</ApiCompatEnforceOptionalRules>
     <CsWinRTApiCompatVersion>1.0.1</CsWinRTApiCompatVersion>
     <ApiCompatArgs>$(ApiCompatArgs) --allow-default-interface-methods</ApiCompatArgs>

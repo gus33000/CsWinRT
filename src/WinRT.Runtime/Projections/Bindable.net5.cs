@@ -67,7 +67,7 @@ namespace ABI.Microsoft.UI.Xaml.Interop
     [Guid("036D2C08-DF29-41AF-8AA2-D774BE62BA6F")]
     internal unsafe interface IBindableIterable : global::Microsoft.UI.Xaml.Interop.IBindableIterable, ABI.System.Collections.IEnumerable
     {
-        
+
     }
 
     [DynamicInterfaceCastableImplementation]
@@ -429,11 +429,11 @@ namespace ABI.System.Collections
             private readonly Func<IWinRTObject, global::System.Collections.IEnumerator> _enumerator;
 
             public AdaptiveFromAbiHelper(Type runtimeType, IWinRTObject winRTObject)
-                :base(winRTObject)
+                : base(winRTObject)
             {
-                Type enumGenericType = (runtimeType.IsGenericType && runtimeType.GetGenericTypeDefinition() == typeof(global::System.Collections.Generic.IEnumerable<>)) ? 
+                Type enumGenericType = (runtimeType.IsGenericType && runtimeType.GetGenericTypeDefinition() == typeof(global::System.Collections.Generic.IEnumerable<>)) ?
                     runtimeType : runtimeType.GetInterface("System.Collections.Generic.IEnumerable`1");
-                if(enumGenericType != null)
+                if (enumGenericType != null)
                 {
                     var getEnumerator = enumGenericType.GetMethod("GetEnumerator");
                     var obj = Expression.Variable(typeof(IWinRTObject));
@@ -467,7 +467,7 @@ namespace ABI.System.Collections
             }
 
             public virtual global::System.Collections.IEnumerator GetEnumerator() =>
-                new Generic.IEnumerator<object>.FromAbiHelper(new NonGenericToGenericIterator(((global::Microsoft.UI.Xaml.Interop.IBindableIterable) GetIterable()).First()));
+                new Generic.IEnumerator<object>.FromAbiHelper(new NonGenericToGenericIterator(((global::Microsoft.UI.Xaml.Interop.IBindableIterable)GetIterable()).First()));
 
             private sealed class NonGenericToGenericIterator : global::Windows.Foundation.Collections.IIterator<object>
             {
@@ -497,7 +497,7 @@ namespace ABI.System.Collections
             {
                 private readonly IEnumerator enumerator;
 
-                public NonGenericToGenericEnumerator(IEnumerator enumerator) => this.enumerator = enumerator; 
+                public NonGenericToGenericEnumerator(IEnumerator enumerator) => this.enumerator = enumerator;
 
                 public object Current => enumerator.Current;
                 public bool MoveNext() { return enumerator.MoveNext(); }
@@ -614,7 +614,7 @@ namespace ABI.System.Collections
             public int Count
             {
                 get
-                { 
+                {
                     uint size = _vector.Size;
                     if (((uint)int.MaxValue) < size)
                     {
@@ -855,7 +855,7 @@ namespace ABI.System.Collections
             }
 
             public uint Size { get => (uint)_list.Count; }
-            
+
             IBindableVectorView IBindableVector.GetView()
             {
                 return new ListToBindableVectorViewAdapter(_list);
@@ -1037,16 +1037,16 @@ namespace ABI.System.Collections
             private void* _RemoveAtEnd_8;
             private void* _Clear_9;
 
-            public delegate* unmanaged[Stdcall]<IntPtr , uint , IntPtr* , int> GetAt_0 { get => (delegate* unmanaged[Stdcall]<IntPtr, uint, IntPtr * , int >)_GetAt_0; set => _GetAt_0 = value; }
-            public delegate* unmanaged[Stdcall]<IntPtr , uint* , int> get_Size_1 { get => (delegate* unmanaged[Stdcall]<IntPtr, uint * , int >)_get_Size_1; set => _get_Size_1 = value; }
-            public delegate* unmanaged[Stdcall]<IntPtr , IntPtr* , int> GetView_2 { get => (delegate* unmanaged[Stdcall]<IntPtr, IntPtr * , int >)_GetView_2; set => _GetView_2 = value; }
-            public delegate* unmanaged[Stdcall]<IntPtr , IntPtr , uint* , byte* , int> IndexOf_3 { get => (delegate* unmanaged[Stdcall]<IntPtr, IntPtr, uint * , byte * , int >)_IndexOf_3; set => _IndexOf_3 = value; }
-            public delegate* unmanaged[Stdcall]<IntPtr , uint , IntPtr , int> SetAt_4 { get => (delegate* unmanaged[Stdcall]<IntPtr, uint, IntPtr, int >)_SetAt_4; set => _SetAt_4 = value; }
-            public delegate* unmanaged[Stdcall]<IntPtr , uint , IntPtr , int> InsertAt_5 { get => (delegate* unmanaged[Stdcall]<IntPtr, uint, IntPtr, int >)_InsertAt_5; set => _InsertAt_5 = value; }
-            public delegate* unmanaged[Stdcall]<IntPtr , uint , int> RemoveAt_6 { get => (delegate* unmanaged[Stdcall]<IntPtr, uint, int >)_RemoveAt_6; set => _RemoveAt_6 = value; }
-            public delegate* unmanaged[Stdcall]<IntPtr , IntPtr , int> Append_7 { get => (delegate* unmanaged[Stdcall]<IntPtr, IntPtr, int >)_Append_7; set => _Append_7 = value; }
-            public delegate* unmanaged[Stdcall]<IntPtr , int> RemoveAtEnd_8 { get => (delegate* unmanaged[Stdcall]<IntPtr, int >)_RemoveAtEnd_8; set => _RemoveAtEnd_8 = value; }
-            public delegate* unmanaged[Stdcall]<IntPtr , int> Clear_9 { get => (delegate* unmanaged[Stdcall]<IntPtr, int >)_Clear_9; set => _Clear_9 = value; }
+            public delegate* unmanaged[Stdcall]<IntPtr, uint, IntPtr*, int> GetAt_0 { get => (delegate* unmanaged[Stdcall]<IntPtr, uint, IntPtr*, int>)_GetAt_0; set => _GetAt_0 = value; }
+            public delegate* unmanaged[Stdcall]<IntPtr, uint*, int> get_Size_1 { get => (delegate* unmanaged[Stdcall]<IntPtr, uint*, int>)_get_Size_1; set => _get_Size_1 = value; }
+            public delegate* unmanaged[Stdcall]<IntPtr, IntPtr*, int> GetView_2 { get => (delegate* unmanaged[Stdcall]<IntPtr, IntPtr*, int>)_GetView_2; set => _GetView_2 = value; }
+            public delegate* unmanaged[Stdcall]<IntPtr, IntPtr, uint*, byte*, int> IndexOf_3 { get => (delegate* unmanaged[Stdcall]<IntPtr, IntPtr, uint*, byte*, int>)_IndexOf_3; set => _IndexOf_3 = value; }
+            public delegate* unmanaged[Stdcall]<IntPtr, uint, IntPtr, int> SetAt_4 { get => (delegate* unmanaged[Stdcall]<IntPtr, uint, IntPtr, int>)_SetAt_4; set => _SetAt_4 = value; }
+            public delegate* unmanaged[Stdcall]<IntPtr, uint, IntPtr, int> InsertAt_5 { get => (delegate* unmanaged[Stdcall]<IntPtr, uint, IntPtr, int>)_InsertAt_5; set => _InsertAt_5 = value; }
+            public delegate* unmanaged[Stdcall]<IntPtr, uint, int> RemoveAt_6 { get => (delegate* unmanaged[Stdcall]<IntPtr, uint, int>)_RemoveAt_6; set => _RemoveAt_6 = value; }
+            public delegate* unmanaged[Stdcall]<IntPtr, IntPtr, int> Append_7 { get => (delegate* unmanaged[Stdcall]<IntPtr, IntPtr, int>)_Append_7; set => _Append_7 = value; }
+            public delegate* unmanaged[Stdcall]<IntPtr, int> RemoveAtEnd_8 { get => (delegate* unmanaged[Stdcall]<IntPtr, int>)_RemoveAtEnd_8; set => _RemoveAtEnd_8 = value; }
+            public delegate* unmanaged[Stdcall]<IntPtr, int> Clear_9 { get => (delegate* unmanaged[Stdcall]<IntPtr, int>)_Clear_9; set => _Clear_9 = value; }
 
             private static readonly Vftbl AbiToProjectionVftable;
             public static readonly IntPtr AbiToProjectionVftablePtr;
@@ -1057,16 +1057,16 @@ namespace ABI.System.Collections
                 {
                     IInspectableVftbl = global::WinRT.IInspectable.Vftbl.AbiToProjectionVftable,
 
-                    _GetAt_0 = (delegate* unmanaged<IntPtr , uint , IntPtr* , int>)&Do_Abi_GetAt_0,
-                    _get_Size_1 = (delegate* unmanaged<IntPtr , uint* , int>)&Do_Abi_get_Size_1,
-                    _GetView_2 = (delegate* unmanaged<IntPtr , IntPtr* , int>)&Do_Abi_GetView_2,
-                    _IndexOf_3 = (delegate* unmanaged<IntPtr , IntPtr , uint* , byte* , int>)&Do_Abi_IndexOf_3,
-                    _SetAt_4 = (delegate* unmanaged<IntPtr , uint , IntPtr , int>)&Do_Abi_SetAt_4,
-                    _InsertAt_5 = (delegate* unmanaged<IntPtr , uint , IntPtr , int>)&Do_Abi_InsertAt_5,
-                    _RemoveAt_6 = (delegate* unmanaged<IntPtr , uint , int>)&Do_Abi_RemoveAt_6,
-                    _Append_7 = (delegate* unmanaged<IntPtr , IntPtr , int>)&Do_Abi_Append_7,
-                    _RemoveAtEnd_8 = (delegate* unmanaged<IntPtr , int>)&Do_Abi_RemoveAtEnd_8,
-                    _Clear_9 = (delegate* unmanaged<IntPtr , int>)&Do_Abi_Clear_9,
+                    _GetAt_0 = (delegate* unmanaged<IntPtr, uint, IntPtr*, int>)&Do_Abi_GetAt_0,
+                    _get_Size_1 = (delegate* unmanaged<IntPtr, uint*, int>)&Do_Abi_get_Size_1,
+                    _GetView_2 = (delegate* unmanaged<IntPtr, IntPtr*, int>)&Do_Abi_GetView_2,
+                    _IndexOf_3 = (delegate* unmanaged<IntPtr, IntPtr, uint*, byte*, int>)&Do_Abi_IndexOf_3,
+                    _SetAt_4 = (delegate* unmanaged<IntPtr, uint, IntPtr, int>)&Do_Abi_SetAt_4,
+                    _InsertAt_5 = (delegate* unmanaged<IntPtr, uint, IntPtr, int>)&Do_Abi_InsertAt_5,
+                    _RemoveAt_6 = (delegate* unmanaged<IntPtr, uint, int>)&Do_Abi_RemoveAt_6,
+                    _Append_7 = (delegate* unmanaged<IntPtr, IntPtr, int>)&Do_Abi_Append_7,
+                    _RemoveAtEnd_8 = (delegate* unmanaged<IntPtr, int>)&Do_Abi_RemoveAtEnd_8,
+                    _Clear_9 = (delegate* unmanaged<IntPtr, int>)&Do_Abi_Clear_9,
 
                 };
                 var nativeVftbl = (IntPtr*)ComWrappersSupport.AllocateVtableMemory(typeof(Vftbl), Marshal.SizeOf<global::WinRT.IInspectable.Vftbl>() + sizeof(IntPtr) * 10);
@@ -1413,7 +1413,7 @@ namespace ABI.System.Collections
         object global::System.Collections.IList.this[int index]
         {
             get => _VectorToList((IWinRTObject)this)[index];
-             
+
             set => _VectorToList((IWinRTObject)this)[index] = value;
         }
 

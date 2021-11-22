@@ -1197,10 +1197,10 @@ _lazyInterfaces = new Dictionary<Type, object>(%)
 
         // ICommand has a lower-fidelity type mapping where the type of the event handler doesn't project one-to-one
         // so we need to hard-code mapping the event handler from the mapped WinRT type to the correct .NET type.
-        if (event.Name() == "CanExecuteChanged" && event_type == "global::System.EventHandler<object>")
-        {
-            event_type = "global::System.EventHandler";
-        }
+        // if (event.Name() == "CanExecuteChanged" && event_type == "global::System.EventHandler<object>")
+        // {
+        //     event_type = "global::System.EventHandler";
+        // }
 
         w.write(R"(
 %%%event % %

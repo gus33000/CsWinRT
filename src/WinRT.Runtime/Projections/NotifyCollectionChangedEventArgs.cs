@@ -10,10 +10,10 @@ using WinRT.Interop;
 namespace ABI.Microsoft.UI.Xaml.Interop
 {
     [global::WinRT.ObjectReferenceWrapper(nameof(_obj))]
-    [Guid("DA049FF2-D2E0-5FE8-8C7B-F87F26060B6F")]
+    [Guid("4CF68D33-E3F2-4964-B85E-945B4F7E2F21")]
     internal unsafe class INotifyCollectionChangedEventArgs
     {
-        [Guid("DA049FF2-D2E0-5FE8-8C7B-F87F26060B6F")]
+        [Guid("4CF68D33-E3F2-4964-B85E-945B4F7E2F21")]
         [StructLayout(LayoutKind.Sequential)]
         public struct Vftbl
         {
@@ -109,10 +109,10 @@ namespace ABI.Microsoft.UI.Xaml.Interop
     }
 
     [global::WinRT.ObjectReferenceWrapper(nameof(_obj))]
-    [Guid("5108EBA4-4892-5A20-8374-A96815E0FD27")]
+    [Guid("B30C3E3A-DF8D-44A5-9A38-7AC0D08CE63D")]
     internal unsafe class WinRTNotifyCollectionChangedEventArgsRuntimeClassFactory
     {
-        [Guid("5108EBA4-4892-5A20-8374-A96815E0FD27")]
+        [Guid("B30C3E3A-DF8D-44A5-9A38-7AC0D08CE63D")]
         [StructLayout(LayoutKind.Sequential)]
         public struct Vftbl
         {
@@ -171,7 +171,7 @@ namespace ABI.System.Collections.Specialized
 
         private class ActivationFactory : BaseActivationFactory
         {
-            public ActivationFactory() : base("Microsoft.UI.Xaml.Interop", "Microsoft.UI.Xaml.Interop.NotifyCollectionChangedEventArgs")
+            public ActivationFactory() : base("Windows.UI.Xaml.Interop", "Windows.UI.Xaml.Interop.NotifyCollectionChangedEventArgs")
             {
             }
         }

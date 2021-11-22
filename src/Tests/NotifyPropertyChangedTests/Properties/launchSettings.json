@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "NotifyPropertyChangedTests": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

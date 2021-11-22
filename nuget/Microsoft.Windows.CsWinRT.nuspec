@@ -12,10 +12,11 @@
     <tags>managed C# WinRT cswinrt WinMD xlang</tags>
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>
     <license type="file">LICENSE</license>
-    <projectUrl>https://github.com/microsoft/cswinrt/tree/master/</projectUrl>
+    <projectUrl>https://github.com/nesherhh/cswinrt/tree/nesherhh/eventhandler/</projectUrl>
     <dependencies>
       <group targetFramework=".NET5.0" />
     </dependencies>
+      <repository type="git" url="https://github.com/nesherhh/CsWinRT.git" branch="nesherhh/eventhandler"/>
   </metadata>
   <files>
     <file src="LICENSE"/>

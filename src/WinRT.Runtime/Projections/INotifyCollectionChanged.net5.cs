@@ -10,10 +10,10 @@ namespace ABI.System.Collections.Specialized
 {
     [DynamicInterfaceCastableImplementation]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    [Guid("530155E1-28A5-5693-87CE-30724D95A06D")]
+    [Guid("28B167D5-1A31-465B-9B25-D5C3AE686C40")]
     public unsafe interface INotifyCollectionChanged : global::System.Collections.Specialized.INotifyCollectionChanged
     {
-        [Guid("530155E1-28A5-5693-87CE-30724D95A06D")]
+        [Guid("28B167D5-1A31-465B-9B25-D5C3AE686C40")]
         public struct Vftbl
         {
             internal IInspectable.Vftbl IInspectableVftbl;
