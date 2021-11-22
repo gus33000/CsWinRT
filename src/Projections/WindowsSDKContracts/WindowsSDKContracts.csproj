@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net5.0</TargetFramework>
-		<Platforms>x64</Platforms>
+		<TargetFramework>netstandard2.0;net5.0;net6.0</TargetFramework>
+		<Platforms>x64;x86</Platforms>
 		<!--<CsWinRTGenerateProjection>true</CsWinRTGenerateProjection>-->
 		<CsWinRTWindowsMetadata>10.0.19041.0+</CsWinRTWindowsMetadata>
 		<!--<AssetTargetFallback>uap10.0.19041</AssetTargetFallback>-->
