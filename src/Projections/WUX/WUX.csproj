@@ -17,22 +17,9 @@
   <PropertyGroup>
     <CsWinRTFilters>
 -exclude Windows
-# Exclude Windows.UI, Windows.UI.Text, Windows.UI.Xaml per Microsoft.Windows.SDK.WinUI.Contracts NuGet
--exclude Windows.UI.Popups
--exclude Windows.UI.Colors
--exclude Windows.UI.IColors
--exclude Windows.UI.ColorHelper
--exclude Windows.UI.IColorHelper
-#-exclude Windows.UI.Text (must include Windows.UI.Text to work around WinUI nuget issues)
 -include Windows.UI.Xaml
--exclude Windows.ApplicationModel.Store.Preview
-# Allow Windows.UI.Text, Windows.UI.Xaml types used in other namespaces
--include Windows.UI.Text
--exclude Windows.UI.Text.FontStretch
--exclude Windows.UI.Text.FontStyle
--exclude Windows.UI.Text.FontWeight
--exclude Windows.UI.Text.UnderlineType
--include Windows.UI.Xaml.Media.Animation.ConditionallyIndependentlyAnimatableAttribute     
+-exclude Windows.UI.Xaml.Media.Animation.ConditionallyIndependentlyAnimatableAttribute
+-include Windows.UI.Text.Core    
     </CsWinRTFilters>
   </PropertyGroup>
 
