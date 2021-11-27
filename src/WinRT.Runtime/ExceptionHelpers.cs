@@ -153,16 +153,16 @@ namespace WinRT
                         ex = new InvalidOperationException(description);
                         break;
                     case E_XAMLPARSEFAILED:
-                        ex = new Microsoft.UI.Xaml.Markup.XamlParseException();
+                        ex = new Windows.UI.Xaml.Markup.XamlParseException();
                         break;
                     case E_LAYOUTCYCLE:
-                        ex = new Microsoft.UI.Xaml.LayoutCycleException();
+                        ex = new Windows.UI.Xaml.LayoutCycleException();
                         break;
                     case E_ELEMENTNOTAVAILABLE:
-                        ex = new Microsoft.UI.Xaml.Automation.ElementNotAvailableException();
+                        ex = new Windows.UI.Xaml.Automation.ElementNotAvailableException();
                         break;
                     case E_ELEMENTNOTENABLED:
-                        ex = new Microsoft.UI.Xaml.Automation.ElementNotEnabledException();
+                        ex = new Windows.UI.Xaml.Automation.ElementNotEnabledException();
                         break;
                     case ERROR_INVALID_WINDOW_HANDLE:
                         ex = new System.Runtime.InteropServices.COMException(
@@ -430,6 +430,131 @@ See https://aka.ms/cswinrt/interop#windows-sdk",
 }
 
 namespace Microsoft.UI.Xaml
+{
+    using System.Runtime.Serialization;
+    namespace Automation
+    {
+        [Serializable]
+#if EMBED
+        internal
+#else
+        public
+#endif
+        class ElementNotAvailableException : Exception
+        {
+            public ElementNotAvailableException()
+                : base("The element is not available.")
+            {
+                HResult = WinRT.ExceptionHelpers.E_ELEMENTNOTAVAILABLE;
+            }
+
+            public ElementNotAvailableException(string message)
+                : base(message)
+            {
+                HResult = WinRT.ExceptionHelpers.E_ELEMENTNOTAVAILABLE;
+            }
+
+            public ElementNotAvailableException(string message, Exception innerException)
+                : base(message, innerException)
+            {
+                HResult = WinRT.ExceptionHelpers.E_ELEMENTNOTAVAILABLE;
+            }
+
+            protected ElementNotAvailableException(SerializationInfo serializationInfo, StreamingContext streamingContext)
+                : base(serializationInfo, streamingContext)
+            {
+            }
+        }
+
+#if EMBED
+        internal
+#else
+        public
+#endif
+        class ElementNotEnabledException : Exception
+        {
+            public ElementNotEnabledException()
+                : base("The element is not enabled.")
+            {
+                HResult = WinRT.ExceptionHelpers.E_ELEMENTNOTENABLED;
+            }
+
+            public ElementNotEnabledException(string message)
+                : base(message)
+            {
+                HResult = WinRT.ExceptionHelpers.E_ELEMENTNOTENABLED;
+            }
+
+            public ElementNotEnabledException(string message, Exception innerException)
+                : base(message, innerException)
+            {
+                HResult = WinRT.ExceptionHelpers.E_ELEMENTNOTENABLED;
+            }
+        }
+    }
+    namespace Markup
+    {
+
+#if EMBED
+        internal
+#else 
+        public
+#endif
+        class XamlParseException : Exception
+        {
+            public XamlParseException()
+                : base("XAML parsing failed.")
+            {
+                HResult = WinRT.ExceptionHelpers.E_XAMLPARSEFAILED;
+            }
+
+            public XamlParseException(string message)
+                : base(message)
+            {
+                HResult = WinRT.ExceptionHelpers.E_XAMLPARSEFAILED;
+            }
+
+            public XamlParseException(string message, Exception innerException)
+                : base(message, innerException)
+            {
+                HResult = WinRT.ExceptionHelpers.E_XAMLPARSEFAILED;
+            }
+        }
+    }
+    [Serializable]
+#if EMBED
+    internal
+#else
+    public
+#endif
+    class LayoutCycleException : Exception
+    {
+        public LayoutCycleException()
+            : base("A cycle occurred while laying out the GUI.")
+        {
+            HResult = WinRT.ExceptionHelpers.E_LAYOUTCYCLE;
+        }
+
+        public LayoutCycleException(string message)
+            : base(message)
+        {
+            HResult = WinRT.ExceptionHelpers.E_LAYOUTCYCLE;
+        }
+
+        public LayoutCycleException(string message, Exception innerException)
+            : base(message, innerException)
+        {
+            HResult = WinRT.ExceptionHelpers.E_LAYOUTCYCLE;
+        }
+
+        protected LayoutCycleException(SerializationInfo serializationInfo, StreamingContext streamingContext)
+            : base(serializationInfo, streamingContext)
+        {
+        }
+    }
+}
+
+namespace Windows.UI.Xaml
 {
     using System.Runtime.Serialization;
     namespace Automation

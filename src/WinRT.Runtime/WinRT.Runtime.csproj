@@ -47,7 +47,7 @@
   <PropertyGroup>
     <!-- Checks for both breaking changes and for new API additions. -->
     <RunApiCompatForSrc>true</RunApiCompatForSrc>
-    <RunMatchingRefApiCompat>true</RunMatchingRefApiCompat>
+    <RunMatchingRefApiCompat>false</RunMatchingRefApiCompat>
     <ApiCompatEnforceOptionalRules>true</ApiCompatEnforceOptionalRules>
     <CsWinRTApiCompatVersion>1.0.1</CsWinRTApiCompatVersion>
     <ApiCompatArgs>$(ApiCompatArgs) --allow-default-interface-methods</ApiCompatArgs>

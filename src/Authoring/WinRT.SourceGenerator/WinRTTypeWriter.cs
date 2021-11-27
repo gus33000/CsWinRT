@@ -288,6 +288,7 @@ namespace Generator
             { "System.FlagsAttribute", new MappedType("System", "FlagsAttribute", "mscorlib" ) },
             { "System.IDisposable", new MappedType("Windows.Foundation", "IClosable", "Windows.Foundation.FoundationContract") },
             { "System.IServiceProvider", new MappedType("Microsoft.UI.Xaml", "IXamlServiceProvider", "Microsoft.UI") },
+            { "System.IServiceProvider", new MappedType("Windows.UI.Xaml", "IXamlServiceProvider", "Windows.Foundation.UniversalApiContract") },
             { "System.Nullable`1", new MappedType("Windows.Foundation", "IReference`1", "Windows.Foundation.FoundationContract" ) },
             { "System.Object", new MappedType("System", "Object", "mscorlib" ) },
             { "System.TimeSpan", new MappedType("Windows.Foundation", "TimeSpan", "Windows.Foundation.FoundationContract", true) },
@@ -304,6 +305,16 @@ namespace Generator
             { "System.Collections.Specialized.NotifyCollectionChangedAction", new MappedType("Microsoft.UI.Xaml.Interop", "NotifyCollectionChangedAction", "Microsoft.UI") },
             { "System.Collections.Specialized.NotifyCollectionChangedEventArgs", new MappedType("Microsoft.UI.Xaml.Interop", "NotifyCollectionChangedEventArgs", "Microsoft.UI") },
             { "System.Collections.Specialized.NotifyCollectionChangedEventHandler", new MappedType("Microsoft.UI.Xaml.Interop", "NotifyCollectionChangedEventHandler", "Microsoft.UI") },
+            { "System.ComponentModel.INotifyPropertyChanged", new MappedType("Windows.UI.Xaml.Data", "INotifyPropertyChanged", "Windows.Foundation.UniversalApiContract") },
+            { "System.ComponentModel.PropertyChangedEventArgs", new MappedType("Windows.UI.Xaml.Data", "PropertyChangedEventArgs", "Windows.Foundation.UniversalApiContract") },
+            { "System.ComponentModel.PropertyChangedEventHandler", new MappedType("Windows.UI.Xaml.Data", "PropertyChangedEventHandler", "Windows.Foundation.UniversalApiContract") },
+            { "System.Windows.Input.ICommand", new MappedType("Windows.UI.Xaml.Input", "ICommand", "Windows.Foundation.UniversalApiContract") },
+            { "System.Collections.IEnumerable", new MappedType("Windows.UI.Xaml.Interop", "IBindableIterable", "Windows.Foundation.UniversalApiContract") },
+            { "System.Collections.IList", new MappedType("Windows.UI.Xaml.Interop", "IBindableVector", "Windows.Foundation.UniversalApiContract") },
+            { "System.Collections.Specialized.INotifyCollectionChanged", new MappedType("Windows.UI.Xaml.Interop", "INotifyCollectionChanged", "Windows.Foundation.UniversalApiContract") },
+            { "System.Collections.Specialized.NotifyCollectionChangedAction", new MappedType("Windows.UI.Xaml.Interop", "NotifyCollectionChangedAction", "Windows.Foundation.UniversalApiContract") },
+            { "System.Collections.Specialized.NotifyCollectionChangedEventArgs", new MappedType("Windows.UI.Xaml.Interop", "NotifyCollectionChangedEventArgs", "Windows.Foundation.UniversalApiContract") },
+            { "System.Collections.Specialized.NotifyCollectionChangedEventHandler", new MappedType("Windows.UI.Xaml.Interop", "NotifyCollectionChangedEventHandler", "Windows.Foundation.UniversalApiContract") },
             { "WinRT.EventRegistrationToken", new MappedType("Windows.Foundation", "EventRegistrationToken", "Windows.Foundation.FoundationContract", true) },
             { "System.AttributeTargets", new MappedType("Windows.Foundation.Metadata", "AttributeTargets", "Windows.Foundation.FoundationContract", true) },
             { "System.AttributeUsageAttribute", new MappedType("Windows.Foundation.Metadata", "AttributeUsageAttribute", "Windows.Foundation.FoundationContract") },
@@ -973,7 +984,7 @@ namespace Generator
 
         private void WriteCustomMappedTypeMembers(INamedTypeSymbol symbol, bool isDefinition, bool isPublic = true)
         {
-            var (_, mappedTypeName, _, _, _) = MappedCSharpTypes[QualifiedName(symbol)].GetMapping(currentTypeDeclaration.Node);
+            var (mappedNamespace, mappedTypeName, _, _, _) = MappedCSharpTypes[QualifiedName(symbol)].GetMapping(currentTypeDeclaration.Node);
             string qualifiedName = GetMappedQualifiedTypeName(symbol);
 
             Logger.Log("writing custom mapped type members for " + mappedTypeName + " public: " + isPublic + " qualified name: " + qualifiedName);
@@ -1247,7 +1258,14 @@ namespace Generator
             }
             else if (string.CompareOrdinal(mappedTypeName, "IBindableIterable") == 0)
             {
-                AddMethod("First", null, GetType("Microsoft.UI.Xaml.Interop.IBindableIterator"));
+                if (mappedNamespace.Contains("Microsoft.UI.Xaml"))
+                {
+                    AddMethod("First", null, GetType("Microsoft.UI.Xaml.Interop.IBindableIterator"));
+                }
+                else
+                {
+                    AddMethod("First", null, GetType("Windows.UI.Xaml.Interop.IBindableIterator"));
+                }
             }
             else if (string.CompareOrdinal(mappedTypeName, "IBindableVector") == 0)
             {
@@ -1262,7 +1280,14 @@ namespace Generator
                     new[] { new Parameter(GetType("System.UInt32"), "index", ParameterAttributes.In) },
                     GetType("System.Object")
                 );
-                AddMethod("GetView", null, GetType("Microsoft.UI.Xaml.Interop.IBindableVectorView"));
+                if (mappedNamespace.Contains("Microsoft.UI.Xaml"))
+                {
+                    AddMethod("GetView", null, GetType("Microsoft.UI.Xaml.Interop.IBindableVectorView"));
+                }
+                else
+                {
+                    AddMethod("GetView", null, GetType("Windows.UI.Xaml.Interop.IBindableVectorView"));
+                }
                 AddMethod(
                     "IndexOf",
                     new[] {

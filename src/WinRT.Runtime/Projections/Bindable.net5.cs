@@ -410,15 +410,413 @@ namespace ABI.Microsoft.UI.Xaml.Interop
     }
 }
 
+namespace Windows.UI.Xaml.Interop
+{
+    [global::WinRT.WindowsRuntimeType]
+	[Guid("036D2C08-DF29-41AF-8AA2-D774BE62BA6F")]
+    internal interface IBindableIterable
+    {
+        IBindableIterator First();
+    }
+    [global::WinRT.WindowsRuntimeType]
+	[Guid("6A1D6C07-076D-49F2-8314-F52C9C9A8331")]
+    internal interface IBindableIterator
+    {
+        bool MoveNext();
+        // GetMany is not implemented by IBindableIterator, but it is here
+        // for compat purposes with WinUI where there are scenarios they do
+        // reinterpret_cast from IBindableIterator to IIterable<object>.  It is
+        // the last function in the vftable and shouldn't be called by anyone.
+        // If called, it will return NotImplementedException.
+        uint GetMany(ref object[] items);
+        object Current { get; }
+        bool HasCurrent { get; }
+    }
+    [global::WinRT.WindowsRuntimeType]
+	[Guid("393DE7DE-6FD0-4C0D-BB71-47244A113E93")]
+    internal interface IBindableVector : IEnumerable
+    {
+        object GetAt(uint index);
+        IBindableVectorView GetView();
+        bool IndexOf(object value, out uint index);
+        void SetAt(uint index, object value);
+        void InsertAt(uint index, object value);
+        void RemoveAt(uint index);
+        void Append(object value);
+        void RemoveAtEnd();
+        void Clear();
+        uint Size { get; }
+    }
+    [global::WinRT.WindowsRuntimeType]
+	[Guid("346DD6E7-976E-4BC3-815D-ECE243BC0F33")]
+    internal interface IBindableVectorView : IEnumerable
+    {
+        object GetAt(uint index);
+        bool IndexOf(object value, out uint index);
+        uint Size { get; }
+    }
+}
+
+namespace ABI.Windows.UI.Xaml.Interop
+{
+    [DynamicInterfaceCastableImplementation]
+	[Guid("036D2C08-DF29-41AF-8AA2-D774BE62BA6F")]
+    internal unsafe interface IBindableIterable : global::Windows.UI.Xaml.Interop.IBindableIterable, ABI.System.Collections.IEnumerable
+    {
+        
+    }
+
+    [DynamicInterfaceCastableImplementation]
+	[Guid("6A1D6C07-076D-49F2-8314-F52C9C9A8331")]
+    internal unsafe interface IBindableIterator : global::Windows.UI.Xaml.Interop.IBindableIterator
+    {
+	    [Guid("6A1D6C07-076D-49F2-8314-F52C9C9A8331")]
+        public struct Vftbl
+        {
+            internal IInspectable.Vftbl IInspectableVftbl;
+            private void* _get_Current_0;
+            public delegate* unmanaged[Stdcall]<IntPtr, IntPtr*, int> get_Current_0 { get => (delegate* unmanaged[Stdcall]<IntPtr, IntPtr*, int>)_get_Current_0; set => _get_Current_0 = value; }
+            private void* _get_HasCurrent_1;
+            public delegate* unmanaged[Stdcall]<IntPtr, byte*, int> get_HasCurrent_1 { get => (delegate* unmanaged[Stdcall]<IntPtr, byte*, int>)_get_HasCurrent_1; set => _get_HasCurrent_1 = value; }
+            private void* _MoveNext_2;
+            public delegate* unmanaged[Stdcall]<IntPtr, byte*, int> MoveNext_2 { get => (delegate* unmanaged[Stdcall]<IntPtr, byte*, int>)_MoveNext_2; set => _MoveNext_2 = value; }
+            // Note this may not be a valid address and should not be called.
+            private void* _GetMany_3;
+            public delegate* unmanaged[Stdcall]<IntPtr, int, IntPtr, uint*, int> GetMany_3 { get => (delegate* unmanaged[Stdcall]<IntPtr, int, IntPtr, uint*, int>)_GetMany_3; set => _GetMany_3 = value; }
+
+            private static readonly Vftbl AbiToProjectionVftable;
+            public static readonly IntPtr AbiToProjectionVftablePtr;
+
+            static unsafe Vftbl()
+            {
+                AbiToProjectionVftable = new Vftbl
+                {
+                    IInspectableVftbl = global::WinRT.IInspectable.Vftbl.AbiToProjectionVftable,
+
+                    _get_Current_0 = (delegate* unmanaged<IntPtr, IntPtr*, int>)&Do_Abi_get_Current_0,
+                    _get_HasCurrent_1 = (delegate* unmanaged<IntPtr, byte*, int>)&Do_Abi_get_HasCurrent_1,
+                    _MoveNext_2 = (delegate* unmanaged<IntPtr, byte*, int>)&Do_Abi_MoveNext_2,
+                    _GetMany_3 = (delegate* unmanaged<IntPtr, int, IntPtr, uint*, int>)&Do_Abi_GetMany_3
+                };
+                var nativeVftbl = (IntPtr*)ComWrappersSupport.AllocateVtableMemory(typeof(Vftbl), Marshal.SizeOf<global::WinRT.IInspectable.Vftbl>() + sizeof(IntPtr) * 4);
+                Marshal.StructureToPtr(AbiToProjectionVftable, (IntPtr)nativeVftbl, false);
+                AbiToProjectionVftablePtr = (IntPtr)nativeVftbl;
+            }
+
+
+            [UnmanagedCallersOnly]
+
+            private static unsafe int Do_Abi_MoveNext_2(IntPtr thisPtr, byte* result)
+            {
+                bool __result = default;
+                *result = default;
+                try
+                {
+                    __result = global::WinRT.ComWrappersSupport.FindObject<global::Windows.UI.Xaml.Interop.IBindableIterator>(thisPtr).MoveNext();
+                    *result = (byte)(__result ? 1 : 0);
+                }
+                catch (Exception __exception__)
+                {
+                    global::WinRT.ExceptionHelpers.SetErrorInfo(__exception__);
+                    return global::WinRT.ExceptionHelpers.GetHRForException(__exception__);
+                }
+                return 0;
+            }
+
+            [UnmanagedCallersOnly]
+
+            private static unsafe int Do_Abi_GetMany_3(IntPtr thisPtr, int __itemsSize, IntPtr items, uint* result)
+            {
+                *result = default;
+
+                try
+                {
+                    // Should never be called.
+                    throw new NotImplementedException();
+                }
+                catch (Exception __exception__)
+                {
+                    global::WinRT.ExceptionHelpers.SetErrorInfo(__exception__);
+                    return global::WinRT.ExceptionHelpers.GetHRForException(__exception__);
+                }
+            }
+
+            [UnmanagedCallersOnly]
+
+            private static unsafe int Do_Abi_get_Current_0(IntPtr thisPtr, IntPtr* value)
+            {
+                object __value = default;
+                *value = default;
+                try
+                {
+                    __value = global::WinRT.ComWrappersSupport.FindObject<global::Windows.UI.Xaml.Interop.IBindableIterator>(thisPtr).Current;
+                    *value = MarshalInspectable<object>.FromManaged(__value);
+                }
+                catch (Exception __exception__)
+                {
+                    global::WinRT.ExceptionHelpers.SetErrorInfo(__exception__);
+                    return global::WinRT.ExceptionHelpers.GetHRForException(__exception__);
+                }
+                return 0;
+            }
+
+            [UnmanagedCallersOnly]
+
+            private static unsafe int Do_Abi_get_HasCurrent_1(IntPtr thisPtr, byte* value)
+            {
+                bool __value = default;
+                *value = default;
+                try
+                {
+                    __value = global::WinRT.ComWrappersSupport.FindObject<global::Windows.UI.Xaml.Interop.IBindableIterator>(thisPtr).HasCurrent;
+                    *value = (byte)(__value ? 1 : 0);
+                }
+                catch (Exception __exception__)
+                {
+                    global::WinRT.ExceptionHelpers.SetErrorInfo(__exception__);
+                    return global::WinRT.ExceptionHelpers.GetHRForException(__exception__);
+                }
+                return 0;
+            }
+        }
+        internal static ObjectReference<Vftbl> FromAbi(IntPtr thisPtr) => ObjectReference<Vftbl>.FromAbi(thisPtr);
+
+        unsafe bool global::Windows.UI.Xaml.Interop.IBindableIterator.MoveNext()
+        {
+            var _obj = ((ObjectReference<Vftbl>)((IWinRTObject)this).GetObjectReferenceForType(typeof(global::Windows.UI.Xaml.Interop.IBindableIterator).TypeHandle));
+            var ThisPtr = _obj.ThisPtr;
+            byte __retval = default;
+            global::WinRT.ExceptionHelpers.ThrowExceptionForHR(_obj.Vftbl.MoveNext_2(ThisPtr, &__retval));
+            return __retval != 0;
+        }
+
+        unsafe uint global::Windows.UI.Xaml.Interop.IBindableIterator.GetMany(ref object[] items)
+        {
+            // Should never be called.
+            throw new NotImplementedException();
+        }
+
+        unsafe object global::Windows.UI.Xaml.Interop.IBindableIterator.Current
+        {
+            get
+            {
+                var _obj = ((ObjectReference<Vftbl>)((IWinRTObject)this).GetObjectReferenceForType(typeof(global::Windows.UI.Xaml.Interop.IBindableIterator).TypeHandle));
+                var ThisPtr = _obj.ThisPtr;
+                IntPtr __retval = default;
+                try
+                {
+                    global::WinRT.ExceptionHelpers.ThrowExceptionForHR(_obj.Vftbl.get_Current_0(ThisPtr, &__retval));
+                    return MarshalInspectable<object>.FromAbi(__retval);
+                }
+                finally
+                {
+                    MarshalInspectable<object>.DisposeAbi(__retval);
+                }
+            }
+        }
+
+        unsafe bool global::Windows.UI.Xaml.Interop.IBindableIterator.HasCurrent
+        {
+            get
+            {
+                var _obj = ((ObjectReference<Vftbl>)((IWinRTObject)this).GetObjectReferenceForType(typeof(global::Windows.UI.Xaml.Interop.IBindableIterator).TypeHandle));
+                var ThisPtr = _obj.ThisPtr;
+                byte __retval = default;
+                global::WinRT.ExceptionHelpers.ThrowExceptionForHR(_obj.Vftbl.get_HasCurrent_1(ThisPtr, &__retval));
+                return __retval != 0;
+            }
+        }
+
+    }
+    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+    internal static class IBindableIterator_Delegates
+    {
+        public unsafe delegate int get_Current_0(IntPtr thisPtr, IntPtr* result);
+        public unsafe delegate int get_HasCurrent_1(IntPtr thisPtr, byte* result);
+        public unsafe delegate int MoveNext_2(IntPtr thisPtr, byte* result);
+        public unsafe delegate int GetMany_3(IntPtr thisPtr, int itemSize, IntPtr items, uint* result);
+    }
+
+    [DynamicInterfaceCastableImplementation]
+	[Guid("346DD6E7-976E-4BC3-815D-ECE243BC0F33")]
+    internal unsafe interface IBindableVectorView : global::Windows.UI.Xaml.Interop.IBindableVectorView
+    {
+	    [Guid("346DD6E7-976E-4BC3-815D-ECE243BC0F33")]
+        public struct Vftbl
+        {
+            internal IInspectable.Vftbl IInspectableVftbl;
+            private void* _GetAt_0;
+            public delegate* unmanaged[Stdcall]<IntPtr, uint, IntPtr*, int> GetAt_0 { get => (delegate* unmanaged[Stdcall]<IntPtr, uint, IntPtr*, int>)_GetAt_0; set => _GetAt_0 = value; }
+            private void* _get_Size_1;
+            public delegate* unmanaged[Stdcall]<IntPtr, uint*, int> get_Size_1 { get => (delegate* unmanaged[Stdcall]<IntPtr, uint*, int>)_get_Size_1; set => _get_Size_1 = value; }
+            private void* _IndexOf_2;
+            public delegate* unmanaged[Stdcall]<IntPtr, IntPtr, uint*, byte*, int> IndexOf_2 { get => (delegate* unmanaged[Stdcall]<IntPtr, IntPtr, uint*, byte*, int>)_IndexOf_2; set => _IndexOf_2 = value; }
+
+            private static readonly Vftbl AbiToProjectionVftable;
+            public static readonly IntPtr AbiToProjectionVftablePtr;
+
+            static unsafe Vftbl()
+            {
+                AbiToProjectionVftable = new Vftbl
+                {
+                    IInspectableVftbl = global::WinRT.IInspectable.Vftbl.AbiToProjectionVftable,
+
+                    _GetAt_0 = (delegate* unmanaged<IntPtr, uint, IntPtr*, int>)&Do_Abi_GetAt_0,
+                    _get_Size_1 = (delegate* unmanaged<IntPtr, uint*, int>)&Do_Abi_get_Size_1,
+                    _IndexOf_2 = (delegate* unmanaged<IntPtr, IntPtr, uint*, byte*, int>)&Do_Abi_IndexOf_2
+
+                };
+                var nativeVftbl = (IntPtr*)ComWrappersSupport.AllocateVtableMemory(typeof(Vftbl), Marshal.SizeOf<global::WinRT.IInspectable.Vftbl>() + sizeof(IntPtr) * 3);
+                Marshal.StructureToPtr(AbiToProjectionVftable, (IntPtr)nativeVftbl, false);
+                AbiToProjectionVftablePtr = (IntPtr)nativeVftbl;
+            }
+
+
+            [UnmanagedCallersOnly]
+
+            private static unsafe int Do_Abi_GetAt_0(IntPtr thisPtr, uint index, IntPtr* result)
+            {
+                object __result = default;
+
+                try
+                {
+                    __result = global::WinRT.ComWrappersSupport.FindObject<global::Windows.UI.Xaml.Interop.IBindableVectorView>(thisPtr).GetAt(index);
+                    *result = MarshalInspectable<object>.FromManaged(__result);
+
+                }
+                catch (Exception __exception__)
+                {
+                    global::WinRT.ExceptionHelpers.SetErrorInfo(__exception__);
+                    return global::WinRT.ExceptionHelpers.GetHRForException(__exception__);
+                }
+                return 0;
+            }
+
+            [UnmanagedCallersOnly]
+
+            private static unsafe int Do_Abi_IndexOf_2(IntPtr thisPtr, IntPtr value, uint* index, byte* returnValue)
+            {
+                bool __returnValue = default;
+
+                *index = default;
+                *returnValue = default;
+                uint __index = default;
+
+                try
+                {
+                    __returnValue = global::WinRT.ComWrappersSupport.FindObject<global::Windows.UI.Xaml.Interop.IBindableVectorView>(thisPtr).IndexOf(MarshalInspectable<object>.FromAbi(value), out __index);
+                    *index = __index;
+                    *returnValue = (byte)(__returnValue ? 1 : 0);
+
+                }
+                catch (Exception __exception__)
+                {
+                    global::WinRT.ExceptionHelpers.SetErrorInfo(__exception__);
+                    return global::WinRT.ExceptionHelpers.GetHRForException(__exception__);
+                }
+                return 0;
+            }
+
+            [UnmanagedCallersOnly]
+
+            private static unsafe int Do_Abi_get_Size_1(IntPtr thisPtr, uint* value)
+            {
+                uint __value = default;
+
+                *value = default;
+
+                try
+                {
+                    __value = global::WinRT.ComWrappersSupport.FindObject<global::Windows.UI.Xaml.Interop.IBindableVectorView>(thisPtr).Size;
+                    *value = __value;
+
+                }
+                catch (Exception __exception__)
+                {
+                    global::WinRT.ExceptionHelpers.SetErrorInfo(__exception__);
+                    return global::WinRT.ExceptionHelpers.GetHRForException(__exception__);
+                }
+                return 0;
+            }
+        }
+        internal static ObjectReference<Vftbl> FromAbi(IntPtr thisPtr) => ObjectReference<Vftbl>.FromAbi(thisPtr);
+
+        private static global::System.Runtime.CompilerServices.ConditionalWeakTable<IWinRTObject, ABI.System.Collections.IEnumerable.FromAbiHelper> _helperTable =
+                new global::System.Runtime.CompilerServices.ConditionalWeakTable<IWinRTObject, ABI.System.Collections.IEnumerable.FromAbiHelper>();
+
+        unsafe object global::Windows.UI.Xaml.Interop.IBindableVectorView.GetAt(uint index)
+        {
+            var _obj = ((ObjectReference<Vftbl>)((IWinRTObject)this).GetObjectReferenceForType(typeof(global::Windows.UI.Xaml.Interop.IBindableIterator).TypeHandle));
+            var ThisPtr = _obj.ThisPtr;
+            IntPtr __retval = default;
+            try
+            {
+                global::WinRT.ExceptionHelpers.ThrowExceptionForHR(_obj.Vftbl.GetAt_0(ThisPtr, index, &__retval));
+                return MarshalInspectable<object>.FromAbi(__retval);
+            }
+            finally
+            {
+                MarshalInspectable<object>.DisposeAbi(__retval);
+            }
+        }
+
+        unsafe bool global::Windows.UI.Xaml.Interop.IBindableVectorView.IndexOf(object value, out uint index)
+        {
+            var _obj = ((ObjectReference<Vftbl>)((IWinRTObject)this).GetObjectReferenceForType(typeof(global::Windows.UI.Xaml.Interop.IBindableIterator).TypeHandle));
+            var ThisPtr = _obj.ThisPtr;
+            IObjectReference __value = default;
+            uint __index = default;
+            byte __retval = default;
+            try
+            {
+                __value = MarshalInspectable<object>.CreateMarshaler(value);
+                global::WinRT.ExceptionHelpers.ThrowExceptionForHR(_obj.Vftbl.IndexOf_2(ThisPtr, MarshalInspectable<object>.GetAbi(__value), &__index, &__retval));
+                index = __index;
+                return __retval != 0;
+            }
+            finally
+            {
+                MarshalInspectable<object>.DisposeMarshaler(__value);
+            }
+        }
+
+        unsafe uint global::Windows.UI.Xaml.Interop.IBindableVectorView.Size
+        {
+            get
+            {
+                var _obj = ((ObjectReference<Vftbl>)((IWinRTObject)this).GetObjectReferenceForType(typeof(global::Windows.UI.Xaml.Interop.IBindableIterator).TypeHandle));
+                var ThisPtr = _obj.ThisPtr;
+                uint __retval = default;
+                global::WinRT.ExceptionHelpers.ThrowExceptionForHR(_obj.Vftbl.get_Size_1(ThisPtr, &__retval));
+                return __retval;
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return _helperTable.GetValue((IWinRTObject)this,
+                        (enumerable) => new ABI.System.Collections.IEnumerable.FromAbiHelper((global::System.Collections.IEnumerable)(IWinRTObject)enumerable)
+                   ).GetEnumerator();
+        }
+    }
+    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+    internal static class IBindableVectorView_Delegates
+    {
+        public unsafe delegate int GetAt_0(IntPtr thisPtr, uint index, IntPtr* result);
+        public unsafe delegate int get_Size_1(IntPtr thisPtr, uint* result);
+        public unsafe delegate int IndexOf_2(IntPtr thisPtr, IntPtr value, uint* index, byte* returnValue);
+    }
+}
+
 namespace ABI.System.Collections
 {
-    using global::Microsoft.UI.Xaml.Interop;
+    using global::Windows.UI.Xaml.Interop;
     using global::System;
     using global::System.Runtime.CompilerServices;
 
     [DynamicInterfaceCastableImplementation]
     [Guid("036D2C08-DF29-41AF-8AA2-D774BE62BA6F")]
-    internal unsafe interface IEnumerable : global::System.Collections.IEnumerable, global::Microsoft.UI.Xaml.Interop.IBindableIterable
+    internal unsafe interface IEnumerable : global::System.Collections.IEnumerable, global::Windows.UI.Xaml.Interop.IBindableIterable
     {
         public static string GetGuidSignature() => GuidGenerator.GetSignature(typeof(IEnumerable));
 
@@ -465,7 +863,7 @@ namespace ABI.System.Collections
             }
 
             public virtual global::System.Collections.IEnumerator GetEnumerator() =>
-                new Generic.IEnumerator<object>.FromAbiHelper(new NonGenericToGenericIterator(((global::Microsoft.UI.Xaml.Interop.IBindableIterable) GetIterable()).First()));
+                new Generic.IEnumerator<object>.FromAbiHelper(new NonGenericToGenericIterator(((global::Windows.UI.Xaml.Interop.IBindableIterable) GetIterable()).First()));
 
             private sealed class NonGenericToGenericIterator : global::Windows.Foundation.Collections.IIterator<object>
             {
@@ -537,7 +935,7 @@ namespace ABI.System.Collections
                 {
                     var __this = global::WinRT.ComWrappersSupport.FindObject<global::System.Collections.IEnumerable>(thisPtr);
                     var iterator = ToAbiHelper.MakeBindableIterator(__this.GetEnumerator());
-                    *result = MarshalInterface<global::Microsoft.UI.Xaml.Interop.IBindableIterator>.FromManaged(iterator);
+                    *result = MarshalInterface<global::Windows.UI.Xaml.Interop.IBindableIterator>.FromManaged(iterator);
                 }
                 catch (Exception __exception__)
                 {
@@ -562,7 +960,7 @@ namespace ABI.System.Collections
                 () => new FromAbiHelper((global::System.Collections.IEnumerable)_this));
         }
 
-        unsafe global::Microsoft.UI.Xaml.Interop.IBindableIterator global::Microsoft.UI.Xaml.Interop.IBindableIterable.First()
+        unsafe global::Windows.UI.Xaml.Interop.IBindableIterator global::Windows.UI.Xaml.Interop.IBindableIterable.First()
         {
             var _obj = ((ObjectReference<Vftbl>)((IWinRTObject)this).GetObjectReferenceForType(typeof(global::System.Collections.IEnumerable).TypeHandle));
             var ThisPtr = _obj.ThisPtr;
@@ -570,11 +968,11 @@ namespace ABI.System.Collections
             try
             {
                 global::WinRT.ExceptionHelpers.ThrowExceptionForHR(_obj.Vftbl.First_0(ThisPtr, &__retval));
-                return MarshalInterface<global::Microsoft.UI.Xaml.Interop.IBindableIterator>.FromAbi(__retval);
+                return MarshalInterface<global::Windows.UI.Xaml.Interop.IBindableIterator>.FromAbi(__retval);
             }
             finally
             {
-                MarshalInterface<global::Microsoft.UI.Xaml.Interop.IBindableIterator>.DisposeAbi(__retval);
+                MarshalInterface<global::Windows.UI.Xaml.Interop.IBindableIterator>.DisposeAbi(__retval);
             }
         }
 
@@ -592,15 +990,15 @@ namespace ABI.System.Collections
 
     [DynamicInterfaceCastableImplementation]
     [Guid("393DE7DE-6FD0-4C0D-BB71-47244A113E93")]
-    unsafe interface IList : global::System.Collections.IList, global::Microsoft.UI.Xaml.Interop.IBindableVector
+    unsafe interface IList : global::System.Collections.IList, global::Windows.UI.Xaml.Interop.IBindableVector
     {
         public static string GetGuidSignature() => GuidGenerator.GetSignature(typeof(IList));
 
         public sealed class FromAbiHelper : global::System.Collections.IList
         {
-            private readonly global::Microsoft.UI.Xaml.Interop.IBindableVector _vector;
+            private readonly global::Windows.UI.Xaml.Interop.IBindableVector _vector;
 
-            public FromAbiHelper(global::Microsoft.UI.Xaml.Interop.IBindableVector vector)
+            public FromAbiHelper(global::Windows.UI.Xaml.Interop.IBindableVector vector)
             {
                 _vector = vector;
             }
@@ -758,7 +1156,7 @@ namespace ABI.System.Collections
                 RemoveAtHelper(_vector, (uint)index);
             }
 
-            private static object GetAt(global::Microsoft.UI.Xaml.Interop.IBindableVector _this, uint index)
+            private static object GetAt(global::Windows.UI.Xaml.Interop.IBindableVector _this, uint index)
             {
                 try
                 {
@@ -775,7 +1173,7 @@ namespace ABI.System.Collections
                 }
             }
 
-            private static void SetAt(global::Microsoft.UI.Xaml.Interop.IBindableVector _this, uint index, object value)
+            private static void SetAt(global::Windows.UI.Xaml.Interop.IBindableVector _this, uint index, object value)
             {
                 try
                 {
@@ -792,7 +1190,7 @@ namespace ABI.System.Collections
                 }
             }
 
-            private static void InsertAtHelper(global::Microsoft.UI.Xaml.Interop.IBindableVector _this, uint index, object item)
+            private static void InsertAtHelper(global::Windows.UI.Xaml.Interop.IBindableVector _this, uint index, object item)
             {
                 try
                 {
@@ -809,7 +1207,7 @@ namespace ABI.System.Collections
                 }
             }
 
-            private static void RemoveAtHelper(global::Microsoft.UI.Xaml.Interop.IBindableVector _this, uint index)
+            private static void RemoveAtHelper(global::Windows.UI.Xaml.Interop.IBindableVector _this, uint index)
             {
                 try
                 {
@@ -1106,12 +1504,12 @@ namespace ABI.System.Collections
 
             private static unsafe int Do_Abi_GetView_2(IntPtr thisPtr, IntPtr* result)
             {
-                global::Microsoft.UI.Xaml.Interop.IBindableVectorView __result = default;
+                global::Windows.UI.Xaml.Interop.IBindableVectorView __result = default;
                 *result = default;
                 try
                 {
                     __result = FindAdapter(thisPtr).GetView();
-                    *result = MarshalInterface<global::Microsoft.UI.Xaml.Interop.IBindableVectorView>.FromManaged(__result);
+                    *result = MarshalInterface<global::Windows.UI.Xaml.Interop.IBindableVectorView>.FromManaged(__result);
                 }
                 catch (Exception __exception__)
                 {
@@ -1272,10 +1670,10 @@ namespace ABI.System.Collections
         private static FromAbiHelper _VectorToList(IWinRTObject _this)
         {
             return (FromAbiHelper)_this.GetOrCreateTypeHelperData(typeof(global::System.Collections.IList).TypeHandle,
-                () => new FromAbiHelper((global::Microsoft.UI.Xaml.Interop.IBindableVector)_this));
+                () => new FromAbiHelper((global::Windows.UI.Xaml.Interop.IBindableVector)_this));
         }
 
-        unsafe object global::Microsoft.UI.Xaml.Interop.IBindableVector.GetAt(uint index)
+        unsafe object global::Windows.UI.Xaml.Interop.IBindableVector.GetAt(uint index)
         {
             var _obj = ((ObjectReference<Vftbl>)((IWinRTObject)this).GetObjectReferenceForType(typeof(global::System.Collections.IList).TypeHandle));
             var ThisPtr = _obj.ThisPtr;
@@ -1291,7 +1689,7 @@ namespace ABI.System.Collections
             }
         }
 
-        unsafe global::Microsoft.UI.Xaml.Interop.IBindableVectorView global::Microsoft.UI.Xaml.Interop.IBindableVector.GetView()
+        unsafe global::Windows.UI.Xaml.Interop.IBindableVectorView global::Windows.UI.Xaml.Interop.IBindableVector.GetView()
         {
             var _obj = ((ObjectReference<Vftbl>)((IWinRTObject)this).GetObjectReferenceForType(typeof(global::System.Collections.IList).TypeHandle));
             var ThisPtr = _obj.ThisPtr;
@@ -1299,15 +1697,15 @@ namespace ABI.System.Collections
             try
             {
                 global::WinRT.ExceptionHelpers.ThrowExceptionForHR(_obj.Vftbl.GetView_2(ThisPtr, &__retval));
-                return MarshalInterface<global::Microsoft.UI.Xaml.Interop.IBindableVectorView>.FromAbi(__retval);
+                return MarshalInterface<global::Windows.UI.Xaml.Interop.IBindableVectorView>.FromAbi(__retval);
             }
             finally
             {
-                MarshalInterface<global::Microsoft.UI.Xaml.Interop.IBindableVectorView>.DisposeAbi(__retval);
+                MarshalInterface<global::Windows.UI.Xaml.Interop.IBindableVectorView>.DisposeAbi(__retval);
             }
         }
 
-        unsafe bool global::Microsoft.UI.Xaml.Interop.IBindableVector.IndexOf(object value, out uint index)
+        unsafe bool global::Windows.UI.Xaml.Interop.IBindableVector.IndexOf(object value, out uint index)
         {
             var _obj = ((ObjectReference<Vftbl>)((IWinRTObject)this).GetObjectReferenceForType(typeof(global::System.Collections.IList).TypeHandle));
             var ThisPtr = _obj.ThisPtr;
@@ -1327,7 +1725,7 @@ namespace ABI.System.Collections
             }
         }
 
-        unsafe void global::Microsoft.UI.Xaml.Interop.IBindableVector.SetAt(uint index, object value)
+        unsafe void global::Windows.UI.Xaml.Interop.IBindableVector.SetAt(uint index, object value)
         {
             var _obj = ((ObjectReference<Vftbl>)((IWinRTObject)this).GetObjectReferenceForType(typeof(global::System.Collections.IList).TypeHandle));
             var ThisPtr = _obj.ThisPtr;
@@ -1343,7 +1741,7 @@ namespace ABI.System.Collections
             }
         }
 
-        unsafe void global::Microsoft.UI.Xaml.Interop.IBindableVector.InsertAt(uint index, object value)
+        unsafe void global::Windows.UI.Xaml.Interop.IBindableVector.InsertAt(uint index, object value)
         {
             var _obj = ((ObjectReference<Vftbl>)((IWinRTObject)this).GetObjectReferenceForType(typeof(global::System.Collections.IList).TypeHandle));
             var ThisPtr = _obj.ThisPtr;
@@ -1359,14 +1757,14 @@ namespace ABI.System.Collections
             }
         }
 
-        unsafe void global::Microsoft.UI.Xaml.Interop.IBindableVector.RemoveAt(uint index)
+        unsafe void global::Windows.UI.Xaml.Interop.IBindableVector.RemoveAt(uint index)
         {
             var _obj = ((ObjectReference<Vftbl>)((IWinRTObject)this).GetObjectReferenceForType(typeof(global::System.Collections.IList).TypeHandle));
             var ThisPtr = _obj.ThisPtr;
             global::WinRT.ExceptionHelpers.ThrowExceptionForHR(_obj.Vftbl.RemoveAt_6(ThisPtr, index));
         }
 
-        unsafe void global::Microsoft.UI.Xaml.Interop.IBindableVector.Append(object value)
+        unsafe void global::Windows.UI.Xaml.Interop.IBindableVector.Append(object value)
         {
             var _obj = ((ObjectReference<Vftbl>)((IWinRTObject)this).GetObjectReferenceForType(typeof(global::System.Collections.IList).TypeHandle));
             var ThisPtr = _obj.ThisPtr;
@@ -1382,21 +1780,21 @@ namespace ABI.System.Collections
             }
         }
 
-        unsafe void global::Microsoft.UI.Xaml.Interop.IBindableVector.RemoveAtEnd()
+        unsafe void global::Windows.UI.Xaml.Interop.IBindableVector.RemoveAtEnd()
         {
             var _obj = ((ObjectReference<Vftbl>)((IWinRTObject)this).GetObjectReferenceForType(typeof(global::System.Collections.IList).TypeHandle));
             var ThisPtr = _obj.ThisPtr;
             global::WinRT.ExceptionHelpers.ThrowExceptionForHR(_obj.Vftbl.RemoveAtEnd_8(ThisPtr));
         }
 
-        unsafe void global::Microsoft.UI.Xaml.Interop.IBindableVector.Clear()
+        unsafe void global::Windows.UI.Xaml.Interop.IBindableVector.Clear()
         {
             var _obj = ((ObjectReference<Vftbl>)((IWinRTObject)this).GetObjectReferenceForType(typeof(global::System.Collections.IList).TypeHandle));
             var ThisPtr = _obj.ThisPtr;
             global::WinRT.ExceptionHelpers.ThrowExceptionForHR(_obj.Vftbl.Clear_9(ThisPtr));
         }
 
-        unsafe uint global::Microsoft.UI.Xaml.Interop.IBindableVector.Size
+        unsafe uint global::Windows.UI.Xaml.Interop.IBindableVector.Size
         {
             get
             {

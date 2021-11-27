@@ -622,11 +622,88 @@ namespace cswinrt
                     { "IColorHelperStatics2" },
                 }
             },
-            // Temporary, until WinUI provides TypeName
+            { "Windows.UI.Xaml",
+                {
+                    { "CornerRadius", "Windows.UI.Xaml", "CornerRadius" },
+                    { "CornerRadiusHelper" },
+                    { "Duration", "Windows.UI.Xaml", "Duration" },
+                    { "DurationHelper" },
+                    { "DurationType", "Windows.UI.Xaml", "DurationType" },
+                    { "GridLength", "Windows.UI.Xaml", "GridLength" },
+                    { "GridLengthHelper" },
+                    { "GridUnitType", "Windows.UI.Xaml", "GridUnitType" },
+                    { "ICornerRadiusHelper" },
+                    { "ICornerRadiusHelperStatics" },
+                    { "IDurationHelper" },
+                    { "IDurationHelperStatics" },
+                    { "IGridLengthHelper" },
+                    { "IGridLengthHelperStatics" },
+                    { "IThicknessHelper" },
+                    { "IThicknessHelperStatics" },
+                    { "Thickness", "Windows.UI.Xaml", "Thickness" },
+                    { "ThicknessHelper" },
+                    { "IXamlServiceProvider", "System", "IServiceProvider" },
+                }
+            },
+            { "Windows.UI.Xaml.Controls.Primitives",
+                {
+                    { "GeneratorPosition", "Windows.UI.Xaml.Controls.Primitives", "GeneratorPosition" },
+                    { "GeneratorPositionHelper" },
+                    { "IGeneratorPositionHelper" },
+                    { "IGeneratorPositionHelperStatics" },
+                }
+            },
+            { "Windows.UI.Xaml.Data",
+                {
+                    { "INotifyPropertyChanged", "System.ComponentModel", "INotifyPropertyChanged" },
+                    { "PropertyChangedEventArgs", "System.ComponentModel", "PropertyChangedEventArgs" },
+                    { "PropertyChangedEventHandler", "System.ComponentModel", "PropertyChangedEventHandler" },
+                }
+            },
+            { "Windows.UI.Xaml.Input",
+                {
+                    { "ICommand", "System.Windows.Input", "ICommand", true }
+                }
+            },
             { "Windows.UI.Xaml.Interop",
                 {
+                    { "IBindableIterable", "System.Collections", "IEnumerable", true, true },
+                    { "IBindableVector", "System.Collections", "IList", true, true },
+                    { "INotifyCollectionChanged", "System.Collections.Specialized", "INotifyCollectionChanged", true },
+                    { "NotifyCollectionChangedAction", "System.Collections.Specialized", "NotifyCollectionChangedAction" },
+                    { "NotifyCollectionChangedEventArgs", "System.Collections.Specialized", "NotifyCollectionChangedEventArgs", true },
+                    { "NotifyCollectionChangedEventHandler", "System.Collections.Specialized", "NotifyCollectionChangedEventHandler", true },
                     { "TypeKind", "Windows.UI.Xaml.Interop", "TypeKind", true },
                     { "TypeName", "System", "Type", true }
+                }
+            },
+            { "Windows.UI.Xaml.Media",
+                {
+                    { "IMatrixHelper" },
+                    { "IMatrixHelperStatics" },
+                    { "Matrix", "Windows.UI.Xaml.Media", "Matrix" },
+                    { "MatrixHelper" },
+                }
+            },
+            { "Windows.UI.Xaml.Media.Animation",
+                {
+                    { "IKeyTimeHelper" },
+                    { "IKeyTimeHelperStatics" },
+                    { "IRepeatBehaviorHelper" },
+                    { "IRepeatBehaviorHelperStatics" },
+                    { "KeyTime", "Windows.UI.Xaml.Media.Animation", "KeyTime" },
+                    { "KeyTimeHelper" },
+                    { "RepeatBehavior", "Windows.UI.Xaml.Media.Animation", "RepeatBehavior" },
+                    { "RepeatBehaviorHelper" },
+                    { "RepeatBehaviorType", "Windows.UI.Xaml.Media.Animation", "RepeatBehaviorType" }
+                }
+            },
+            { "Windows.UI.Xaml.Media.Media3D",
+                {
+                    { "IMatrix3DHelper" },
+                    { "IMatrix3DHelperStatics" },
+                    { "Matrix3D", "Windows.UI.Xaml.Media.Media3D", "Matrix3D" },
+                    { "Matrix3DHelper" },
                 }
             },
         };

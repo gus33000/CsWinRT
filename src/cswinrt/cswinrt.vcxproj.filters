@@ -30,6 +30,9 @@
     <Filter Include="strings\additions\Microsoft.UI.Xaml">
       <UniqueIdentifier>{8626e8bc-727e-4c4d-a7fa-fe90c02b3090}</UniqueIdentifier>
     </Filter>
+    <Filter Include="strings\additions\Windows.UI.Xaml">
+      <UniqueIdentifier>{8626e8bc-727e-4c4d-a7fa-fe90c02b3091}</UniqueIdentifier>
+    </Filter>
     <Filter Include="strings\additions\Windows.Storage.Streams">
       <UniqueIdentifier>{4035db1f-9a59-42da-84a0-e3c3227fe586}</UniqueIdentifier>
     </Filter>
@@ -51,6 +54,18 @@
     <Filter Include="strings\additions\Microsoft.UI.Xaml.Controls.Primitives">
       <UniqueIdentifier>{369a6d8a-43e6-48af-82c1-bb2e555909a4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="strings\additions\Windows.UI.Xaml.Media">
+      <UniqueIdentifier>{b683f592-740c-4868-8ab3-67e3d7044589}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="strings\additions\Windows.UI.Xaml.Media.Animation">
+      <UniqueIdentifier>{e3fd55b6-0467-4d57-ba01-e2caa59dd768}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="strings\additions\Windows.UI.Xaml.Media.Media3D">
+      <UniqueIdentifier>{335b6163-2c84-4616-944e-c45b4ffeaed4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="strings\additions\Windows.UI.Xaml.Controls.Primitives">
+      <UniqueIdentifier>{369a6d8a-43e6-48af-82c1-bb2e555909a5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="strings\WinRT.cs">
@@ -65,6 +80,9 @@
     </None>
     <None Include="strings\additions\Microsoft.UI.Xaml\Microsoft.UI.Xaml.cs">
       <Filter>strings\additions\Microsoft.UI.Xaml</Filter>
+    </None>
+    <None Include="strings\additions\Windows.UI.Xaml\Windows.UI.Xaml.cs">
+      <Filter>strings\additions\Windows.UI.Xaml</Filter>
     </None>
     <None Include="strings\additions\Windows.Storage.Streams\NetFxToWinRtStreamAdapter.cs">
       <Filter>strings\additions\Windows.Storage.Streams</Filter>
@@ -167,6 +185,21 @@
     </None>
     <None Include="strings\additions\Microsoft.UI.Xaml\Microsoft.UI.Xaml.SR.cs">
       <Filter>strings\additions\Microsoft.UI.Xaml</Filter>
+    </None>
+    <None Include="strings\additions\Windows.UI.Xaml.Media.Media3D\Windows.UI.Xaml.Media.Media3D.cs">
+      <Filter>strings\additions\Windows.UI.Xaml.Media.Media3D</Filter>
+    </None>
+    <None Include="strings\additions\Windows.UI.Xaml.Media.Animation\Windows.UI.Xaml.Media.Animation.cs">
+      <Filter>strings\additions\Windows.UI.Xaml.Media.Animation</Filter>
+    </None>
+    <None Include="strings\additions\Windows.UI.Xaml.Media\Windows.UI.Xaml.Media.cs">
+      <Filter>strings\additions\Windows.UI.Xaml.Media</Filter>
+    </None>
+    <None Include="strings\additions\Windows.UI.Xaml.Controls.Primitives\Windows.UI.Xaml.Controls.Primitives.cs">
+      <Filter>strings\additions\Windows.UI.Xaml.Controls.Primitives</Filter>
+    </None>
+    <None Include="strings\additions\Windows.UI.Xaml\Windows.UI.Xaml.SR.cs">
+      <Filter>strings\additions\Windows.UI.Xaml</Filter>
     </None>
     <None Include="Directory.Build.targets" />
     <None Include="PreviousPlatforms.linq" />
