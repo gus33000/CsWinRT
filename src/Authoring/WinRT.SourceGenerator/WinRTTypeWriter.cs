@@ -1211,18 +1211,6 @@ namespace Generator
                     GetType("System.Object")
                 );
             }
-            else if (string.CompareOrdinal(mappedTypeName, "INotifyDataErrorInfo") == 0)
-            {
-                AddProperty("HasErrors", GetType("System.Boolean"), false);
-                AddEvent(
-                    "ErrorsChanged",
-                    GetType("System.EventHandler`1", true, -1, false, new[] { GetType("System.ComponentModel.DataErrorsChangedEventArgs").Type }));
-                AddMethod(
-                    "GetErrors",
-                    new[] { new Parameter(GetType("System.String"), "propertyName", ParameterAttributes.In) },
-                    GetType("System.Collections.Generic.IEnumerable`1", true, -1, false, new[] { GetType("System.Object").Type })
-                );
-            }
             else if (string.CompareOrdinal(mappedTypeName, "INotifyPropertyChanged") == 0)
             {
                 AddEvent("PropertyChanged", GetType("System.ComponentModel.PropertyChangedEventHandler"));

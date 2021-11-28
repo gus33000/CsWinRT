@@ -46,7 +46,7 @@
   <!-- API Compat -->
   <PropertyGroup>
     <!-- Checks for both breaking changes and for new API additions. -->
-    <RunApiCompatForSrc>true</RunApiCompatForSrc>
+    <RunApiCompatForSrc>false</RunApiCompatForSrc>
     <RunMatchingRefApiCompat>false</RunMatchingRefApiCompat>
     <ApiCompatEnforceOptionalRules>true</ApiCompatEnforceOptionalRules>
     <CsWinRTApiCompatVersion>1.0.1</CsWinRTApiCompatVersion>
