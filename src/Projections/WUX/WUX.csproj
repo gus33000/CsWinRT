@@ -3,24 +3,123 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net5.0;net6.0</TargetFrameworks>
     <Platforms>x64;x86</Platforms>
-    <AssemblyName>Microsoft.Windows.UI.Xaml.SDK.NET</AssemblyName>
+    <!--<AssemblyName>Microsoft.Windows.UI.Xaml.SDK.NET</AssemblyName>-->
+    <AssemblyName>Microsoft.Windows.Full.SDK.NET</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     <ProjectReference Include="..\..\WinRT.Runtime\WinRT.Runtime.csproj" />
     <ProjectReference Include="..\..\cswinrt\cswinrt.vcxproj" />
-    <ProjectReference Include="..\Windows\Windows.csproj" />
+    <!--<ProjectReference Include="..\Windows\Windows.csproj" />-->
     <InternalsVisibleTo Include="UnitTest" />
   </ItemGroup>
 
-  <PropertyGroup>
+<!--<PropertyGroup>
     <CsWinRTFilters>
 -exclude Windows
+# Allow Windows.UI, Windows.UI.Text, Windows.UI.Xaml per Microsoft.Windows.SDK.WinUI.Contracts NuGet
+-exclude Windows.UI.Popups
+-include Windows.UI.Colors
+-include Windows.UI.IColors
+-include Windows.UI.ColorHelper
+-include Windows.UI.IColorHelper
+-include Windows.UI.Text
 -include Windows.UI.Xaml
--exclude Windows.UI.Xaml.Media.Animation.ConditionallyIndependentlyAnimatableAttribute
--include Windows.UI.Text.Core    
+-include Windows.ApplicationModel.Store.Preview.IWebAuthenticationCoreManagerHelper
+-include Windows.ApplicationModel.Store.Preview.WebAuthenticationCoreManagerHelper
+# Exclude Windows.UI.Text, Windows.UI.Xaml types used in other namespaces
+-exclude Windows.UI.Text.FontStretch
+-exclude Windows.UI.Text.FontStyle
+-exclude Windows.UI.Text.FontWeight
+-include Windows.UI.Text.FontWeights
+-exclude Windows.UI.Text.UnderlineType
+-exclude Windows.UI.Text.Core
     </CsWinRTFilters>
+  </PropertyGroup>-->
+
+  <PropertyGroup>
+    <CsWinRTFilters>
+      -include Windows
+    </CsWinRTFilters>
+    <!--<CsWinRTIncludes>
+      Windows.ApplicationModel.Activation.ActivatedEventsContract;
+      Windows.ApplicationModel.Activation.ActivationCameraSettingsContract;
+      Windows.ApplicationModel.Activation.ContactActivatedEventsContract;
+      Windows.ApplicationModel.Activation.WebUISearchActivatedEventsContract;
+      Windows.ApplicationModel.Background.BackgroundAlarmApplicationContract;
+      Windows.ApplicationModel.Calls.Background.CallsBackgroundContract;
+      Windows.ApplicationModel.Calls.CallsPhoneContract;
+      Windows.ApplicationModel.Calls.CallsVoipContract;
+      Windows.ApplicationModel.Calls.LockScreenCallContract;
+      Windows.ApplicationModel.CommunicationBlocking.CommunicationBlockingContract;
+      Windows.ApplicationModel.FullTrustAppContract;
+      Windows.ApplicationModel.Preview.InkWorkspace.PreviewInkWorkspaceContract;
+      Windows.ApplicationModel.Preview.Notes.PreviewNotesContract;
+      Windows.ApplicationModel.Resources.Management.ResourceIndexerContract;
+      Windows.ApplicationModel.Search.Core.SearchCoreContract;
+      Windows.ApplicationModel.Search.SearchContract;
+      Windows.ApplicationModel.SocialInfo.SocialInfoContract;
+      Windows.ApplicationModel.StartupTaskContract;
+      Windows.ApplicationModel.Wallet.WalletContract;
+      Windows.Devices.Custom.CustomDeviceContract;
+      Windows.Devices.Portable.PortableDeviceContract;
+      Windows.Devices.Printers.Extensions.ExtensionsContract;
+      Windows.Devices.Printers.PrintersContract;
+      Windows.Devices.Scanners.ScannerDeviceContract;
+      Windows.Devices.SmartCards.SmartCardBackgroundTriggerContract;
+      Windows.Devices.SmartCards.SmartCardEmulatorContract;
+      Windows.Devices.Sms.LegacySmsApiContract;
+      Windows.Embedded.DeviceLockdown.DeviceLockdownContract;
+      Windows.Gaming.Input.GamingInputPreviewContract;
+      Windows.Gaming.Preview.GamesEnumerationContract;
+      Windows.Gaming.UI.GameChatOverlayContract;
+      Windows.Gaming.UI.GamingUIProviderContract;
+      Windows.Globalization.GlobalizationJapanesePhoneticAnalyzerContract;
+      Windows.Graphics.Printing3D.Printing3DContract;
+      Windows.Management.Deployment.Preview.DeploymentPreviewContract;
+      Windows.Management.Deployment.SharedPackageContainerContract;
+      Windows.Management.Orchestration.OrchestrationContract;
+      Windows.Management.Workplace.WorkplaceSettingsContract;
+      Windows.Media.AppBroadcasting.AppBroadcastingContract;
+      Windows.Media.AppRecording.AppRecordingContract;
+      Windows.Media.Capture.AppBroadcastContract;
+      Windows.Media.Capture.AppCaptureContract;
+      Windows.Media.Capture.AppCaptureMetadataContract;
+      Windows.Media.Capture.CameraCaptureUIContract;
+      Windows.Media.Capture.GameBarContract;
+      Windows.Media.Devices.CallControlContract;
+      Windows.Media.MediaControlContract;
+      Windows.Media.Playlists.PlaylistsContract;
+      Windows.Media.Protection.ProtectionRenewalContract;
+      Windows.Networking.NetworkOperators.LegacyNetworkOperatorsContract;
+      Windows.Networking.NetworkOperators.NetworkOperatorsFdnContract;
+      Windows.Networking.Sockets.ControlChannelTriggerContract;
+      Windows.Networking.XboxLive.XboxLiveSecureSocketsContract;
+      Windows.Perception.Automation.Core.PerceptionAutomationCoreContract;
+      Windows.Phone.PhoneContract;
+      Windows.Phone.PhoneInternalContract;
+      Windows.Phone.StartScreen.DualSimTileContract;
+      Windows.Security.EnterpriseData.EnterpriseDataContract;
+      Windows.Security.ExchangeActiveSyncProvisioning.EasContract;
+      Windows.Services.Maps.GuidanceContract;
+      Windows.Services.Maps.LocalSearchContract;
+      Windows.Storage.Provider.CloudFilesContract;
+      Windows.System.Profile.ProfileHardwareTokenContract;
+      Windows.System.Profile.ProfileRetailInfoContract;
+      Windows.System.Profile.ProfileSharedModeContract;
+      Windows.System.Profile.SystemManufacturers.SystemManufacturersContract;
+      Windows.System.UserProfile.UserProfileContract;
+      Windows.System.UserProfile.UserProfileLockScreenContract;
+      Windows.UI.ApplicationSettings.ApplicationsSettingsContract;
+      Windows.UI.Core.AnimationMetrics.AnimationMetricsContract;
+      Windows.UI.Core.CoreWindowDialogsContract;
+      Windows.UI.Core.Preview.Communications.PreviewCommunicationsContract;
+      Windows.UI.Shell.SecurityAppManagerContract;
+      Windows.UI.WebUI.Core.WebUICommandBarContract;
+      Windows.UI.Xaml.Hosting.HostingContract;
+      Windows.Web.Http.Diagnostics.HttpDiagnosticsContract;
+    </CsWinRTIncludes>-->
   </PropertyGroup>
 
   <PropertyGroup>
