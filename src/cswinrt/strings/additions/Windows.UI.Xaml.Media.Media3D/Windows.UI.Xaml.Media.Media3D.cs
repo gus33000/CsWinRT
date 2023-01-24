@@ -1,10 +1,10 @@
 
-namespace Microsoft.UI.Xaml.Media.Media3D
+namespace Windows.UI.Xaml.Media.Media3D
 {
     using global::Windows.Foundation;
 
-    [global::WinRT.WindowsRuntimeType("Microsoft.UI")]
-    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Microsoft.UI.Xaml.Media.Media3D.Matrix3D))]
+    [global::WinRT.WindowsRuntimeType("Windows.Foundation.UniversalApiContract")]
+    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Windows.UI.Xaml.Media.Media3D.Matrix3D))]
     [StructLayout(LayoutKind.Sequential)]
 #if EMBED
     internal
@@ -696,7 +696,7 @@ namespace Microsoft.UI.Xaml.Media.Media3D
     }
 }
 
-namespace ABI.Microsoft.UI.Xaml.Media.Media3D
+namespace ABI.Windows.UI.Xaml.Media.Media3D
 {
 #if EMBED
     internal
@@ -706,6 +706,6 @@ namespace ABI.Microsoft.UI.Xaml.Media.Media3D
     static class Matrix3D
     {
         public static string GetGuidSignature() => 
-            $"struct(Microsoft.UI.Xaml.Media.Media3D.Matrix3D;f8;f8;f8;f8;f8;f8;f8;f8;f8;f8;f8;f8;f8;f8;f8;f8)";
+            $"struct(Windows.UI.Xaml.Media.Media3D.Matrix3D;f8;f8;f8;f8;f8;f8;f8;f8;f8;f8;f8;f8;f8;f8;f8;f8)";
     }
 }

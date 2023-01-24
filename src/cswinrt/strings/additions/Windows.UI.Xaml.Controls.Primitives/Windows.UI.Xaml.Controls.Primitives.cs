@@ -1,10 +1,10 @@
 
-namespace Microsoft.UI.Xaml.Controls.Primitives
+namespace Windows.UI.Xaml.Controls.Primitives
 {
     using global::Windows.Foundation;
 
-    [global::WinRT.WindowsRuntimeType("Microsoft.UI")]
-    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Microsoft.UI.Xaml.Controls.Primitives.GeneratorPosition))]
+    [global::WinRT.WindowsRuntimeType("Windows.Foundation.UniversalApiContract")]
+    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Windows.UI.Xaml.Controls.Primitives.GeneratorPosition))]
     [StructLayout(LayoutKind.Sequential)]
 #if EMBED
     internal
@@ -59,7 +59,7 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
     }
 }
 
-namespace ABI.Microsoft.UI.Xaml.Controls.Primitives
+namespace ABI.Windows.UI.Xaml.Controls.Primitives
 {
 #if EMBED
     internal
@@ -68,6 +68,6 @@ namespace ABI.Microsoft.UI.Xaml.Controls.Primitives
 #endif
     static class GeneratorPosition
     {
-        public static string GetGuidSignature() => $"struct(Microsoft.UI.Xaml.Controls.Primitives.GeneratorPosition;i4;i4)";
+        public static string GetGuidSignature() => $"struct(Windows.UI.Xaml.Controls.Primitives.GeneratorPosition;i4;i4)";
     }
 }

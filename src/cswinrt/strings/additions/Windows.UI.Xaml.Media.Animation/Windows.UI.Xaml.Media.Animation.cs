@@ -1,10 +1,10 @@
 
-namespace Microsoft.UI.Xaml.Media.Animation
+namespace Windows.UI.Xaml.Media.Animation
 {
     using global::Windows.Foundation;
 
-    [global::WinRT.WindowsRuntimeType("Microsoft.UI")]
-    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Microsoft.UI.Xaml.Media.Animation.KeyTime))]
+    [global::WinRT.WindowsRuntimeType("Windows.Foundation.UniversalApiContract")]
+    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Windows.UI.Xaml.Media.Animation.KeyTime))]
     [StructLayout(LayoutKind.Sequential)]
 #if EMBED
     internal
@@ -78,7 +78,7 @@ namespace Microsoft.UI.Xaml.Media.Animation
         }
     }
 
-    [global::WinRT.WindowsRuntimeType("Microsoft.UI")]
+    [global::WinRT.WindowsRuntimeType("Windows.Foundation.UniversalApiContract")]
 #if EMBED
     internal
 #else
@@ -91,8 +91,8 @@ namespace Microsoft.UI.Xaml.Media.Animation
         Forever
     }
 
-    [global::WinRT.WindowsRuntimeType("Microsoft.UI")]
-    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Microsoft.UI.Xaml.Media.Animation.RepeatBehavior))]
+    [global::WinRT.WindowsRuntimeType("Windows.Foundation.UniversalApiContract")]
+    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Windows.UI.Xaml.Media.Animation.RepeatBehavior))]
     [StructLayout(LayoutKind.Sequential)]
 #if EMBED
     internal
@@ -284,7 +284,7 @@ namespace Microsoft.UI.Xaml.Media.Animation
     }
 }
 
-namespace ABI.Microsoft.UI.Xaml.Media.Animation
+namespace ABI.Windows.UI.Xaml.Media.Animation
 {
 #if EMBED
     internal
@@ -296,7 +296,7 @@ namespace ABI.Microsoft.UI.Xaml.Media.Animation
         public static string GetGuidSignature()
         {
             string timeSpanSignature = global::WinRT.GuidGenerator.GetSignature(typeof(global::System.TimeSpan));
-            return $"struct(Microsoft.UI.Xaml.Media.Animation.KeyTime;{timeSpanSignature})";
+            return $"struct(Windows.UI.Xaml.Media.Animation.KeyTime;{timeSpanSignature})";
         }
     }
 
@@ -310,7 +310,7 @@ namespace ABI.Microsoft.UI.Xaml.Media.Animation
         public static string GetGuidSignature()
         {
             string timeSpanSignature = global::WinRT.GuidGenerator.GetSignature(typeof(global::System.TimeSpan));
-            return $"struct(Microsoft.UI.Xaml.Media.Animation.RepeatBehavior;f8;{timeSpanSignature};{RepeatBehaviorType.GetGuidSignature()})";
+            return $"struct(Windows.UI.Xaml.Media.Animation.RepeatBehavior;f8;{timeSpanSignature};{RepeatBehaviorType.GetGuidSignature()})";
         }
     }
 
@@ -321,6 +321,6 @@ namespace ABI.Microsoft.UI.Xaml.Media.Animation
 #endif
     static class RepeatBehaviorType
     {
-        public static string GetGuidSignature() => "enum(Microsoft.UI.Xaml.Media.Animation.RepeatBehaviorType;i4)";
+        public static string GetGuidSignature() => "enum(Windows.UI.Xaml.Media.Animation.RepeatBehaviorType;i4)";
     }
 }
