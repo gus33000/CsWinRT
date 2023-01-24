@@ -1,0 +1,43 @@
+trigger:
+- personal/gmonce/windows.ui.xaml_support
+
+pool:
+  vmImage: windows-2022
+
+steps:
+# Use .NET Core SDK 3.1
+- task: UseDotNet@2
+  displayName: Use .NET Core SDK 3.1
+  inputs:
+    version: 3.1.x
+    installationPath: C:\Users\VssAdministrator\AppData\Local\Microsoft\dotnet\
+    performMultiLevelLookup: true
+
+# Install .NET 6 SDK 
+- task: PowerShell@2
+  displayName: Install .NET 6 SDK
+  inputs:
+    targetType: inline
+    failOnStderr: true
+    script: |
+     Write-Host ##vso[task.setvariable variable=PATH;]${env:LocalAppData}\Microsoft\dotnet;${env:PATH}; 
+     
+     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; 
+     
+     dotnet new globaljson --sdk-version "6.0.301" 
+     
+     &([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) -Version "6.0.301" -Architecture "x64" -AzureFeed "https://dotnetcli.azureedge.net/dotnet"
+
+# Build Tool
+- task: CmdLine@2
+  displayName: Build Tool
+  inputs:
+    workingDirectory: $(Build.SourcesDirectory)\src
+    script: |
+      if "%VSCMD_VER%"=="" (
+        pushd c:
+        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" >nul 2>&1
+        popd
+      )
+
+      build.cmd all Release 2.0.0.0 2.0.0-private.0 2.0.0.0
