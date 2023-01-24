@@ -169,16 +169,16 @@ namespace WinRT
                         ex = new InvalidOperationException(description);
                         break;
                     case E_XAMLPARSEFAILED:
-                        ex = new Microsoft.UI.Xaml.Markup.XamlParseException();
+                        ex = new Windows.UI.Xaml.Markup.XamlParseException();
                         break;
                     case E_LAYOUTCYCLE:
-                        ex = new Microsoft.UI.Xaml.LayoutCycleException();
+                        ex = new Windows.UI.Xaml.LayoutCycleException();
                         break;
                     case E_ELEMENTNOTAVAILABLE:
-                        ex = new Microsoft.UI.Xaml.Automation.ElementNotAvailableException();
+                        ex = new Windows.UI.Xaml.Automation.ElementNotAvailableException();
                         break;
                     case E_ELEMENTNOTENABLED:
-                        ex = new Microsoft.UI.Xaml.Automation.ElementNotEnabledException();
+                        ex = new Windows.UI.Xaml.Automation.ElementNotEnabledException();
                         break;
                     case ERROR_INVALID_WINDOW_HANDLE:
                         ex = new System.Runtime.InteropServices.COMException(
@@ -423,7 +423,7 @@ See https://aka.ms/cswinrt/interop#windows-sdk",
     }
 }
 
-namespace Microsoft.UI.Xaml
+namespace Windows.UI.Xaml
 {
     using System.Runtime.Serialization;
     namespace Automation

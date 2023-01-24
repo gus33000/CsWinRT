@@ -1,10 +1,10 @@
 
-namespace Microsoft.UI.Xaml.Media
+namespace Windows.UI.Xaml.Media
 {
     using global::Windows.Foundation;
 
-    [global::WinRT.WindowsRuntimeType("Microsoft.UI")]
-    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Microsoft.UI.Xaml.Media.Matrix))]
+    [global::WinRT.WindowsRuntimeType("Windows.Foundation.UniversalApiContract")]
+    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Windows.UI.Xaml.Media.Matrix))]
     [StructLayout(LayoutKind.Sequential)]
 #if EMBED
     internal
@@ -249,7 +249,7 @@ namespace Microsoft.UI.Xaml.Media
     }
 }
 
-namespace ABI.Microsoft.UI.Xaml.Media
+namespace ABI.Windows.UI.Xaml.Media
 {
 #if EMBED
     internal
@@ -258,6 +258,6 @@ namespace ABI.Microsoft.UI.Xaml.Media
 #endif
     static class Matrix
     {
-        public static string GetGuidSignature() => $"struct(Microsoft.UI.Xaml.Media.Matrix;f8;f8;f8;f8;f8;f8)";
+        public static string GetGuidSignature() => $"struct(Windows.UI.Xaml.Media.Matrix;f8;f8;f8;f8;f8;f8)";
     }
 }

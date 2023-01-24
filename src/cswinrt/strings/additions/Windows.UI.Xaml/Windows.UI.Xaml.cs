@@ -1,10 +1,10 @@
 
-namespace Microsoft.UI.Xaml
+namespace Windows.UI.Xaml
 {
     using global::Windows.Foundation;
 
-    [global::WinRT.WindowsRuntimeType("Microsoft.UI")]
-    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Microsoft.UI.Xaml.CornerRadius))]
+    [global::WinRT.WindowsRuntimeType("Windows.Foundation.UniversalApiContract")]
+    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Windows.UI.Xaml.Controls.CornerRadius))]
     [StructLayout(LayoutKind.Sequential)]
 #if EMBED
     internal
@@ -151,7 +151,7 @@ namespace Microsoft.UI.Xaml
         }
     }
 
-    [global::WinRT.WindowsRuntimeType("Microsoft.UI")]
+    [global::WinRT.WindowsRuntimeType("Windows.Foundation.UniversalApiContract")]
 #if EMBED
     internal
 #else
@@ -164,8 +164,8 @@ namespace Microsoft.UI.Xaml
         Star,
     }
 
-    [global::WinRT.WindowsRuntimeType("Microsoft.UI")]
-    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Microsoft.UI.Xaml.GridLength))]
+    [global::WinRT.WindowsRuntimeType("Windows.Foundation.UniversalApiContract")]
+    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Windows.UI.Xaml.GridLength))]
     [StructLayout(LayoutKind.Sequential)]
 #if EMBED
     internal
@@ -282,8 +282,8 @@ namespace Microsoft.UI.Xaml
         }
     }
 
-    [global::WinRT.WindowsRuntimeType("Microsoft.UI")]
-    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Microsoft.UI.Xaml.Thickness))]
+    [global::WinRT.WindowsRuntimeType("Windows.Foundation.UniversalApiContract")]
+    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Windows.UI.Xaml.Thickness))]
     [StructLayout(LayoutKind.Sequential)]
 #if EMBED
     internal
@@ -396,7 +396,7 @@ namespace Microsoft.UI.Xaml
         }
     }
 
-    [global::WinRT.WindowsRuntimeType("Microsoft.UI")]
+    [global::WinRT.WindowsRuntimeType("Windows.Foundation.UniversalApiContract")]
 #if EMBED
     internal
 #else
@@ -409,8 +409,8 @@ namespace Microsoft.UI.Xaml
         Forever
     }
 
-    [global::WinRT.WindowsRuntimeType("Microsoft.UI")]
-    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Microsoft.UI.Xaml.Duration))]
+    [global::WinRT.WindowsRuntimeType("Windows.Foundation.UniversalApiContract")]
+    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Windows.UI.Xaml.Duration))]
     [StructLayout(LayoutKind.Sequential)]
 #if EMBED
     internal
@@ -701,7 +701,7 @@ namespace Microsoft.UI.Xaml
     }
 }
 
-namespace ABI.Microsoft.UI.Xaml
+namespace ABI.Windows.UI.Xaml
 {
 #if EMBED
     internal
@@ -710,7 +710,7 @@ namespace ABI.Microsoft.UI.Xaml
 #endif
     static class CornerRadius
     {
-        public static string GetGuidSignature() => $"struct(Microsoft.UI.Xaml.CornerRadius;f8;f8;f8;f8)";
+        public static string GetGuidSignature() => $"struct(Windows.UI.Xaml.CornerRadius;f8;f8;f8;f8)";
     }
 
 #if EMBED
@@ -723,8 +723,8 @@ namespace ABI.Microsoft.UI.Xaml
         public static string GetGuidSignature()
         {
             string timeSpanSignature = global::WinRT.GuidGenerator.GetSignature(typeof(global::System.TimeSpan));
-            string durationTypeSignature = global::WinRT.GuidGenerator.GetSignature(typeof(global::Microsoft.UI.Xaml.DurationType));
-            return $"struct(Microsoft.UI.Xaml.Duration;{timeSpanSignature};{durationTypeSignature})";
+            string durationTypeSignature = global::WinRT.GuidGenerator.GetSignature(typeof(global::Windows.UI.Xaml.DurationType));
+            return $"struct(Windows.UI.Xaml.Duration;{timeSpanSignature};{durationTypeSignature})";
         }
     }
 
@@ -735,7 +735,7 @@ namespace ABI.Microsoft.UI.Xaml
 #endif
     static class DurationType
     {
-        public static string GetGuidSignature() => "enum(Microsoft.UI.Xaml.DurationType;i4)";
+        public static string GetGuidSignature() => "enum(Windows.UI.Xaml.DurationType;i4)";
     }
 
 #if EMBED
@@ -747,8 +747,8 @@ namespace ABI.Microsoft.UI.Xaml
     {
         public static string GetGuidSignature()
         {
-            string unitTypeSignature = global::WinRT.GuidGenerator.GetSignature(typeof(global::Microsoft.UI.Xaml.GridUnitType));
-            return $"struct(Microsoft.UI.Xaml.GridLength;f8;{unitTypeSignature})";
+            string unitTypeSignature = global::WinRT.GuidGenerator.GetSignature(typeof(global::Windows.UI.Xaml.GridUnitType));
+            return $"struct(Windows.UI.Xaml.GridLength;f8;{unitTypeSignature})";
         }
     }
 
@@ -759,7 +759,7 @@ namespace ABI.Microsoft.UI.Xaml
 #endif
     static class GridUnitType
     {
-        public static string GetGuidSignature() => "enum(Microsoft.UI.Xaml.GridUnitType;i4)";
+        public static string GetGuidSignature() => "enum(Windows.UI.Xaml.GridUnitType;i4)";
     }
 
 #if EMBED
@@ -769,6 +769,6 @@ namespace ABI.Microsoft.UI.Xaml
 #endif
     static class Thickness
     {
-        public static string GetGuidSignature() => $"struct(Microsoft.UI.Xaml.Thickness;f8;f8;f8;f8)";
+        public static string GetGuidSignature() => $"struct(Windows.UI.Xaml.Thickness;f8;f8;f8;f8)";
     }
 }
