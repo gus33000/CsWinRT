@@ -1,9 +1,10 @@
 
 namespace Windows.UI.Xaml.Media.Media3D
 {
-    using Windows.Foundation;
+    using global::Windows.Foundation;
 
     [global::WinRT.WindowsRuntimeType("Windows.Foundation.UniversalApiContract")]
+    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Windows.UI.Xaml.Media.Media3D.Matrix3D))]
     [StructLayout(LayoutKind.Sequential)]
 #if EMBED
     internal

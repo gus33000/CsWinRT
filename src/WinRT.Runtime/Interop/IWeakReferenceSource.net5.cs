@@ -10,6 +10,7 @@ namespace WinRT.Interop
 {
     [WindowsRuntimeType]
     [Guid("00000038-0000-0000-C000-000000000046")]
+    [WindowsRuntimeHelperType(typeof(global::ABI.WinRT.Interop.IWeakReferenceSource))]
 #if EMBED
     internal
 #else
@@ -22,6 +23,7 @@ namespace WinRT.Interop
 
     [WindowsRuntimeType]
     [Guid("00000037-0000-0000-C000-000000000046")]
+    [WindowsRuntimeHelperType(typeof(global::ABI.WinRT.Interop.IWeakReference))]
 #if EMBED
     internal
 #else
@@ -48,6 +50,16 @@ namespace WinRT.Interop
             }
 
             return ComWrappersSupport.CreateCCWForObject<IUnknownVftbl>(target, riid);
+        }
+
+        public IntPtr ResolveForABI(Guid riid)
+        {
+            if (!_ref.TryGetTarget(out object target))
+            {
+                return IntPtr.Zero;
+            }
+
+            return ComWrappersSupport.CreateCCWForObjectForABI(target, riid);
         }
     }
 }
@@ -82,7 +94,7 @@ namespace ABI.WinRT.Interop
     [Guid("00000038-0000-0000-C000-000000000046")]
     internal unsafe interface IWeakReferenceSource : global::WinRT.Interop.IWeakReferenceSource
     {
-        internal static readonly Guid IID = new(0x00000038, 0, 0, 0xC0, 0, 0, 0, 0, 0, 0, 0x46);
+        internal static readonly Guid IID = InterfaceIIDs.IWeakReferenceSource_IID;
 
         public static IntPtr AbiToProjectionVftablePtr;
         static unsafe IWeakReferenceSource()
@@ -99,9 +111,7 @@ namespace ABI.WinRT.Interop
 
             try
             {
-                using var objRef = ComWrappersSupport.CreateCCWForObject(new global::WinRT.Interop.ManagedWeakReference(ComWrappersSupport.FindObject<object>(thisPtr)));
-                ExceptionHelpers.ThrowExceptionForHR(objRef.TryAs(IWeakReference.IID, out var ptr));
-                *weakReference = ptr;
+                *weakReference = ComWrappersSupport.CreateCCWForObjectForABI(new global::WinRT.Interop.ManagedWeakReference(ComWrappersSupport.FindObject<object>(thisPtr)), IWeakReference.IID);
             }
             catch (Exception __exception__)
             {
@@ -134,14 +144,20 @@ namespace ABI.WinRT.Interop
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
         private static int Do_Abi_Resolve(IntPtr thisPtr, Guid* riid, IntPtr* objectReference)
         {
-            IObjectReference _objectReference = default;
-
             *objectReference = default;
 
             try
             {
-                _objectReference = global::WinRT.ComWrappersSupport.FindObject<global::WinRT.Interop.IWeakReference>(thisPtr).Resolve(*riid);
-                *objectReference = _objectReference?.GetRef() ?? IntPtr.Zero;
+                var weakReference = global::WinRT.ComWrappersSupport.FindObject<global::WinRT.Interop.IWeakReference>(thisPtr);
+                if (weakReference is global::WinRT.Interop.ManagedWeakReference managedWeakReference)
+                {
+                    *objectReference = managedWeakReference.ResolveForABI(*riid);
+                }
+                else
+                {
+                    using var _objectReference = weakReference.Resolve(*riid);
+                    *objectReference = _objectReference?.GetRef() ?? IntPtr.Zero;
+                }
             }
             catch (Exception __exception__)
             {

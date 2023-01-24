@@ -597,6 +597,34 @@ namespace UnitTest
             IDictionary<string, string> b = null;
             var c = Tests.Collection3(a, out b);
             Assert.True(SequencesEqual(a, b, c));
+            RunDictionaryTests(c);
+        }
+
+#if NET
+        [Fact]
+        public void Collections_Dictionary_IDIC()
+        {
+            var a = new Dictionary<string, string>()
+            {
+                ["apples"] = "1",
+                ["oranges"] = "2",
+                ["pears"] = "3"
+            };
+            var c = Tests.Collection3(a, out _);
+            var inspectable = new IInspectable(((IWinRTObject)c).NativeObject);
+            var dictCreatedWithIDIC = (IDictionary<string, string>)inspectable;
+            RunDictionaryTests(dictCreatedWithIDIC);
+        }
+#endif 
+        private void RunDictionaryTests(IDictionary<string, string> c)
+        {
+            Assert.True(SequencesEqual(c.Keys, new List<string> { "apples", "oranges", "pears" }));
+            Assert.True(SequencesEqual(c.Values, new List<string> { "1", "2", "3" }));
+            Assert.True(SequencesEqual(c, new List<KeyValuePair<string, string>> {
+                new KeyValuePair<string, string>("apples", "1"),
+                new KeyValuePair<string, string>("oranges", "2"),
+                new KeyValuePair<string, string>("pears", "3")
+            }));
 
             c["bananas"] = "4";
             Assert.Equal("4", c["bananas"]);
@@ -623,8 +651,12 @@ namespace UnitTest
             Assert.Equal(4, c.Keys.Count());
             Assert.Equal(4, c.Values.Count());
 
+            c.Remove(new KeyValuePair<string, string>("apples", "1"));
+            Assert.ThrowsAny<Exception>(() => c["apples"]);
+
             c.Clear();
             Assert.Empty(c);
+
         }
 
         [Fact]
@@ -639,9 +671,39 @@ namespace UnitTest
             IReadOnlyDictionary<string, string> b = null;
             var c = Tests.Collection4(a, out b);
             Assert.True(SequencesEqual(a, b, c));
+            RunReadOnlyDictionaryTests(c);
+        }
+
+#if NET
+        [Fact]
+        public void Collections_ReadOnly_Dictionary_IDIC()
+        {
+            var a = new Dictionary<string, string>()
+            {
+                ["apples"] = "1",
+                ["oranges"] = "2",
+                ["pears"] = "3"
+            };
+            IReadOnlyDictionary<string, string> b = null;
+            var c = Tests.Collection4(a, out b);
+            var inspectable = new IInspectable(((IWinRTObject)c).NativeObject);
+            var dictCreatedWithIDIC = (IReadOnlyDictionary<string, string>)inspectable;
+            RunReadOnlyDictionaryTests(dictCreatedWithIDIC);
+        }
+#endif
+
+        private void RunReadOnlyDictionaryTests(IReadOnlyDictionary<string, string> c)
+        {
+            Assert.True(SequencesEqual(c.Keys, new List<string> { "apples", "oranges", "pears" }));
+            Assert.True(SequencesEqual(c.Values, new List<string> { "1", "2", "3" }));
+            Assert.True(SequencesEqual(c, new List<KeyValuePair<string, string>> {
+                new KeyValuePair<string, string>("apples", "1"),
+                new KeyValuePair<string, string>("oranges", "2"),
+                new KeyValuePair<string, string>("pears", "3")
+            }));
 
             Assert.Equal("2", c["oranges"]);
-            Assert.Equal(3, c.Count());
+            Assert.Equal(3, c.Count);
             Assert.True(c.ContainsKey("pears"));
             Assert.Equal(3, c.Values.Count());
             Assert.Equal(3, c.Keys.Count());
@@ -654,26 +716,53 @@ namespace UnitTest
             IList<string> b = null;
             var c = Tests.Collection5(a, out b);
             Assert.True(SequencesEqual(a, b, c));
+            RunListTests(c);
+        }
 
+#if NET
+        [Fact]
+        public void Collections_List_IDIC()
+        {
+            string[] a = new string[] { "apples", "oranges", "pears" };
+            IList<string> b = null;
+            var c = Tests.Collection5(a, out b);
+            Assert.True(SequencesEqual(a, b, c));
+            var inspectable = new IInspectable(((IWinRTObject)c).NativeObject);
+            var listCreatedWithIDIC = (IList<string>)inspectable;
+            RunListTests(listCreatedWithIDIC);
+        }
+#endif
+
+        private void RunListTests(IList<string> c)
+        {
+            Assert.Equal(3, c.Count);
             Assert.Equal(1, c.IndexOf("oranges"));
             Assert.NotNull(c.AsAgile());
+
+            Assert.False(c.IsReadOnly);
+
             c.Add("bananas");
 
             c[3] = "strawberries";
             Assert.Equal("strawberries", c[3]);
             Assert.False(c.Contains("bananas"));
-            
+
             c.Insert(3, "kiwis");
             Assert.True(c.Remove("kiwis"));
             c.RemoveAt(3);
 
             string[] copied = new string[c.Count];
             c.CopyTo(copied, 0);
+            Assert.True(SequencesEqual<string>(new string[] { "apples", "oranges", "pears" }, copied));
 
             var enumerator = c.GetEnumerator();
             Assert.True(enumerator.MoveNext());
             Assert.NotNull(enumerator.Current);
-         }
+
+            c.Clear();
+            Assert.Empty(c);
+            Assert.Equal(0, c.Count);
+        }
 
         [Fact]
         public void CastListToEnum_String()
@@ -692,11 +781,29 @@ namespace UnitTest
             IReadOnlyList<string> b = null;
             var c = Tests.Collection6(a, out b);
             Assert.True(SequencesEqual(a, b, c));
+            RunReadonlyListTests(c);
+        }
 
-            Assert.Equal("oranges", a[1]);
-            Assert.Equal(3, a.Count());
-            Assert.NotNull(a.GetEnumerator());
-        } 
+#if NET
+        [Fact]
+        public void Collections_ReadOnly_List_IDIC()
+        {
+            string[] a = new string[] { "apples", "oranges", "pears" };
+            IReadOnlyList<string> b = null;
+            var c = Tests.Collection6(a, out b);
+            Assert.True(SequencesEqual(a, b, c));
+            var inspectable = new IInspectable(((IWinRTObject)c).NativeObject);
+            var listCreatedWithIDIC = (IReadOnlyList<string>)inspectable;
+            RunReadonlyListTests(listCreatedWithIDIC);
+        }
+#endif
+        private void RunReadonlyListTests(IReadOnlyList<string> c)
+        {
+            Assert.Equal("oranges", c[1]);
+            Assert.Equal(3, c.Count());
+            Assert.Equal(3, c.Count);
+            Assert.NotNull(c.GetEnumerator());
+        }
 
         [Fact]
         public void Collections_IEnumerable_Call()
@@ -867,6 +974,231 @@ namespace UnitTest
             Assert.True(composableObjects.GetRange(1, 3).SequenceEqual(interfaceSubset));
         }
 
+        private void Box_type<T>(T val, Func<T, object, object> boxFunc)
+        {
+            var boxedVal = boxFunc(val, val);
+            Assert.IsType<T>(boxedVal);
+            Assert.Equal((T)boxedVal, val);
+        }
+
+        [Fact]
+        public void Box_Byte()
+        {
+            Box_type<byte>(4, Tests.Box1);
+        }
+
+        [Fact]
+        public void Box_UShort()
+        {
+            Box_type<ushort>(4, Tests.Box2);
+        }
+
+        [Fact]
+        public void Box_UInt()
+        {
+            Box_type<uint>(4, Tests.Box3);
+        }
+
+        [Fact]
+        public void Box_ULong()
+        {
+            Box_type<ulong>(4, Tests.Box4);
+        }
+
+        [Fact]
+        public void Box_Short()
+        {
+            Box_type<short>(4, Tests.Box5);
+        }
+
+        [Fact]
+        public void Box_Int()
+        {
+            Box_type(4, Tests.Box6);
+        }
+
+        [Fact]
+        public void Box_Long()
+        {
+            Box_type<long>(4, Tests.Box7);
+        }
+
+        [Fact]
+        public void Box_Bool()
+        {
+            Box_type(true, Tests.Box8);
+        }
+
+        [Fact]
+        public void Box_Float()
+        {
+            Box_type<float>(4, Tests.Box9);
+        }
+
+        [Fact]
+        public void Box_Double()
+        {
+            Box_type(4.0, Tests.Box10);
+        }
+
+        [Fact]
+        public void Box_Guid()
+        {
+            Box_type(Guid.NewGuid(), Tests.Box11);
+        }
+
+        [Fact]
+        public void Box_Char()
+        {
+            Box_type('c', Tests.Box12);
+        }
+
+        [Fact]
+        public void Box_String()
+        {
+            Box_type("test", Tests.Box13);
+        }
+
+        [Fact]
+        public void Box_Timespan()
+        {
+            Box_type(TimeSpan.FromMilliseconds(4), Tests.Box14);
+        }
+
+        [Fact]
+        public void Box_Blittable()
+        {
+            Blittable blittable = new Blittable(3, 4, 5, 6, 7, 8, 9, 10, 11, typeof(ITests).GUID);
+            Box_type(blittable, Tests.Box15);
+        }
+
+        [Fact]
+        public void Box_NonBittable()
+        {
+            NonBlittable nonBlittable = new NonBlittable(true, 'a', "one", 1);
+            Box_type(nonBlittable, Tests.Box16);
+        }
+
+        [Fact]
+        public void Box_DateTime()
+        {
+            Box_type(DateTimeOffset.Now, Tests.Box17);
+        }
+
+        [Fact]
+        public void Box_LongArray()
+        {
+            long[] arr = new long[] { 2, 4, 6 };
+            Box_type(arr, Tests.Box18);
+
+            long[] arr2 = new long[] { 2, 4, 6 };
+            Box_type(arr2, Tests.Box18);
+            Box_type(arr2, Tests.Box18);
+
+            long[] arr3 = new long[0];
+            Box_type(arr3, Tests.Box18);
+
+            long[] arr4 = new long[0];
+            Box_type(arr4, Tests.Box18);
+        }
+
+        [Fact]
+        public void Box_BoolArray()
+        {
+            bool[] arr = new bool[] { true, false, true };
+            Box_type(arr, Tests.Box19);
+
+            bool[] arr2 = new bool[] { true, false, true };
+            Box_type(arr2, Tests.Box19);
+            Box_type(arr2, Tests.Box19);
+
+            bool[] arr3 = new bool[0];
+            Box_type(arr3, Tests.Box19);
+
+            bool[] arr4 = new bool[0];
+            Box_type(arr4, Tests.Box19);
+        }
+
+        [Fact]
+        public void Box_StringArray()
+        {
+            string[] arr = new string[] { "one", "two", "three" };
+            Box_type(arr, Tests.Box20);
+
+            string[] arr2 = new string[] { "four", "five", "six" };
+            Box_type(arr2, Tests.Box20);
+            Box_type(arr2, Tests.Box20);
+
+            string[] arr3 = new string[0];
+            Box_type(arr3, Tests.Box20);
+
+            string[] arr4 = new string[0];
+            Box_type(arr4, Tests.Box20);
+        }
+
+        [Fact]
+        public void Box_TimeSpanArray()
+        {
+            TimeSpan[] arr = new TimeSpan[] { TimeSpan.FromMilliseconds(4), TimeSpan.FromMilliseconds(5), TimeSpan.FromMilliseconds(6) };
+            Box_type(arr, Tests.Box21);
+
+            TimeSpan[] arr2 = new TimeSpan[] { TimeSpan.FromMilliseconds(4), TimeSpan.FromMilliseconds(5), TimeSpan.FromMilliseconds(6) };
+            Box_type(arr2, Tests.Box21);
+            Box_type(arr2, Tests.Box21);
+
+            TimeSpan[] arr3 = new TimeSpan[0];
+            Box_type(arr3, Tests.Box21);
+
+            TimeSpan[] arr4 = new TimeSpan[0];
+            Box_type(arr4, Tests.Box21);
+        }
+
+        [Fact]
+        public void Fast_Abi_Simple()
+        {
+            var simple = new test_component_fast.Simple();
+            Assert.NotNull(simple);
+            simple = new test_component_fast.Simple("Hello");
+            Assert.Equal("Hello", simple.Property1);
+            Assert.Equal("StaticMethod1", test_component_fast.Simple.StaticMethod1());
+            Assert.Equal("StaticMethod2", test_component_fast.Simple.StaticMethod2());
+            Assert.Equal("Method1", simple.Method1());
+            Assert.Equal("Method2", simple.Method2());
+            Assert.Equal("Method3", simple.Method3());
+            Assert.Equal("Method4", simple.Method4());
+            Assert.Equal("Method5", simple.Method5());
+            Assert.Equal("Method6", simple.Method6());
+            Assert.Equal("Method7", simple.Method7());
+            Assert.Equal("Method8", simple.Method8());
+            Assert.Equal("Method9", simple.Method9());
+            simple.Property1 = "Property1";
+            simple.Property3 = "Property3";
+            Assert.Equal("Property1", simple.Property1);
+            Assert.Equal("Property2", simple.Property2);
+            Assert.Equal("Property3", simple.Property3);
+            var ev = "";
+            simple.Event0 += () =>
+            {
+                ev = "Hello";
+            };
+            simple.InvokeEvent0();
+            Assert.Equal("Hello", ev);
+        }
+
+        [Fact]
+        public void Fast_Abi_Composition()
+        {
+            var compositor = new test_component_fast.Composition.Compositor();
+            var sv = compositor.CreateSpriteVisual();
+            sv.Offset = 10;
+            sv.StartAnimationGroup();
+            Assert.Equal("", sv.Serialize(100));
+            Assert.Equal(10, sv.Offset);
+            Assert.Equal(10, sv.Pad);
+            sv.ObjectProperty = new List<int> { 1, 2, 3 };
+            Assert.Equal(3, ((List<int>)sv.ObjectProperty).Count);
+        }
+
         // Nota Bene: this test case must always remain the final one
         [Fact]
         public void Z_Check_Coverage()
@@ -874,5 +1206,6 @@ namespace UnitTest
             Tests.Simple();
             //Assert.Equal((double)Tests.Percentage, (double)100);
         }
+
     }
 }

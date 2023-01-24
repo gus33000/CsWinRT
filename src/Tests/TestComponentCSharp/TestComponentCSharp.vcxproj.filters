@@ -19,6 +19,8 @@
     <ClCompile Include="Windows.Class.cpp" />
     <ClCompile Include="ABCDEFGHIJKLMNOPQRSTUVQXYZabcdefghijklmnopqrstuvqxyzABCDEFGHIJKLMNOPQRSTUVQXYZabcdefghijklmnopqrstuvqxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.cpp" />
     <ClCompile Include="AnotherAssembly.SetPropertyClass.cpp" />
+    <ClCompile Include="CustomEquals.cpp" />
+    <ClCompile Include="CustomExperimentClass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -31,6 +33,8 @@
     <ClInclude Include="Windows.Class.h" />
     <ClInclude Include="ABCDEFGHIJKLMNOPQRSTUVQXYZabcdefghijklmnopqrstuvqxyzABCDEFGHIJKLMNOPQRSTUVQXYZabcdefghijklmnopqrstuvqxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.h" />
     <ClInclude Include="AnotherAssembly.SetPropertyClass.h" />
+    <ClInclude Include="CustomEquals.h" />
+    <ClInclude Include="CustomExperimentClass.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="TestComponentCSharp.idl" />

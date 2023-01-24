@@ -41,16 +41,21 @@ namespace WinRT
             Func<IntPtr, System.WeakReference<object>> rcwFactory = (_) =>
             {
                 object runtimeWrapper = null;
-                if (identity.TryAs<IInspectable.Vftbl>(out var inspectableRef) == 0)
+                if (typeof(T).IsDelegate())
+                {
+                    runtimeWrapper = CreateDelegateFactory(typeof(T))(ptr);
+                }
+                else if (identity.TryAs<IInspectable.Vftbl>(out var inspectableRef) == 0)
                 {
                     var inspectable = new IInspectable(identity);
-                    string runtimeClassName = GetRuntimeClassForTypeCreation(inspectable, typeof(T));
-                    runtimeWrapper = string.IsNullOrEmpty(runtimeClassName) ? inspectable : TypedObjectFactoryCacheForRuntimeClassName.GetOrAdd(runtimeClassName, className => CreateTypedRcwFactory(className))(inspectable);
+                    Type runtimeClassType = GetRuntimeClassForTypeCreation(inspectable, typeof(T));
+                    runtimeWrapper = runtimeClassType == null ? inspectable : TypedObjectFactoryCacheForType.GetOrAdd(runtimeClassType, classType => CreateTypedRcwFactory(classType))(inspectable);
                 }
                 else if (identity.TryAs<ABI.WinRT.Interop.IWeakReference.Vftbl>(out var weakRef) == 0)
                 {
                     runtimeWrapper = new ABI.WinRT.Interop.IWeakReference(weakRef);
                 }
+
                 keepAliveSentinel = runtimeWrapper; // We don't take a strong reference on runtimeWrapper at any point, so we need to make sure it lives until it can get assigned to rcw.
                 var runtimeWrapperReference = new System.WeakReference<object>(runtimeWrapper);
                 var cleanupSentinel = new RuntimeWrapperCleanup(identity.ThisPtr, runtimeWrapperReference);
@@ -80,8 +85,7 @@ namespace WinRT
             // for a single System.Type.
             return rcw switch
             {
-                ABI.System.Nullable<string> ns => (T)(object)ns.Value,
-                ABI.System.Nullable<Type> nt => (T)(object)nt.Value,
+                ABI.System.Nullable nt => (T)nt.Value,
                 _ => (T)rcw
             };
         }
@@ -91,6 +95,12 @@ namespace WinRT
             // The unwrapping here needs to be an exact type match in case the user
             // has implemented a WinRT interface or inherited from a WinRT class
             // in a .NET (non-projected) type.
+
+            if (o is null)
+            {
+                objRef = null;
+                return false;
+            }
 
             if (o is Delegate del)
             {
@@ -165,12 +175,12 @@ namespace WinRT
             return objRef;
         }
 
-        internal static ObjectReference<T> CreateCCWForObject<T>(object obj, Guid iid)
+        internal static IntPtr CreateCCWForObjectForABI(object obj, Guid iid)
         {
             var wrapper = ComWrapperCache.GetValue(obj, _ => new ComCallableWrapper(obj));
             Marshal.ThrowExceptionForHR(Marshal.QueryInterface(wrapper.IdentityPtr, ref iid, out var iidCcw));
             GC.KeepAlive(wrapper); // This GC.KeepAlive ensures that a newly created wrapper is alive until objRef is created and has AddRef'd the CCW.
-            return ObjectReference<T>.Attach(ref iidCcw);
+            return iidCcw;
         }
 
         public static T FindObject<T>(IntPtr thisPtr)
@@ -186,7 +196,7 @@ namespace WinRT
             IUnknownVftblPtr = Marshal.AllocHGlobal(sizeof(IUnknownVftbl));
             (*(IUnknownVftbl*)IUnknownVftblPtr) = new IUnknownVftbl
             {
-                QueryInterface = (delegate* unmanaged[Stdcall]<IntPtr, ref Guid, out IntPtr, int>)Marshal.GetFunctionPointerForDelegate(Abi_QueryInterface),
+                QueryInterface = (delegate* unmanaged[Stdcall]<IntPtr, Guid*, IntPtr*, int>)Marshal.GetFunctionPointerForDelegate(Abi_QueryInterface),
                 AddRef = (delegate* unmanaged[Stdcall]<IntPtr, uint>)Marshal.GetFunctionPointerForDelegate(Abi_AddRef),
                 Release = (delegate* unmanaged[Stdcall]<IntPtr, uint>)Marshal.GetFunctionPointerForDelegate(Abi_Release),
             };
@@ -194,11 +204,11 @@ namespace WinRT
         
         public static IntPtr AllocateVtableMemory(Type vtableType, int size) => Marshal.AllocCoTaskMem(size);
 
-        private delegate int QueryInterface(IntPtr pThis, ref Guid iid, out IntPtr ptr);
-        private static QueryInterface Abi_QueryInterface = Do_Abi_QueryInterface; 
-        private static int Do_Abi_QueryInterface(IntPtr pThis, ref Guid iid, out IntPtr ptr)
+        private unsafe delegate int QueryInterface(IntPtr pThis, Guid* iid, IntPtr* ptr);
+        private unsafe static QueryInterface Abi_QueryInterface = Do_Abi_QueryInterface; 
+        private unsafe static int Do_Abi_QueryInterface(IntPtr pThis, Guid* iid, IntPtr* ptr)
         {
-            return UnmanagedObject.FindObject<ComCallableWrapper>(pThis).QueryInterface(iid, out ptr);
+            return UnmanagedObject.FindObject<ComCallableWrapper>(pThis).QueryInterface(*iid, out *ptr);
         }
 
         private delegate uint AddRefRelease(IntPtr pThis);
@@ -324,21 +334,9 @@ namespace WinRT
 
             InspectableInfo = inspectableInfo;
 
-            interfaceTableEntries.Add(new ComInterfaceEntry
-            {
-                IID = typeof(IUnknownVftbl).GUID,
-                Vtable = IUnknownVftbl.AbiToProjectionVftblPtr
-            });
-
-            interfaceTableEntries.Add(new ComInterfaceEntry
-            {
-                IID = typeof(IInspectable).GUID,
-                Vtable = IInspectable.Vftbl.AbiToProjectionVftablePtr
-            });
-
             InitializeManagedQITable(interfaceTableEntries);
 
-            IdentityPtr = _managedQITable[typeof(IUnknownVftbl).GUID];
+            IdentityPtr = _managedQITable[IUnknownVftbl.IID];
         }
 
         ~ComCallableWrapper()

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -95,7 +96,7 @@ namespace WinRT
         readonly delegate* unmanaged[Stdcall]<IntPtr, IntPtr*, int> _GetActivationFactory;
         readonly delegate* unmanaged[Stdcall]<int> _CanUnloadNow; // TODO: Eventually periodically call
 
-        static readonly string _currentModuleDirectory = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+        static readonly string _currentModuleDirectory = AppContext.BaseDirectory;
 
         static Dictionary<string, DllModule> _cache = new System.Collections.Generic.Dictionary<string, DllModule>(StringComparer.Ordinal);
 
@@ -294,6 +295,10 @@ namespace WinRT
             }
         }
 
+#if NET
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2091:RequiresUnreferencedCode",
+            Justification = "No members of the generic type are dynamically accessed in this code path.")]
+#endif
         public unsafe ObjectReference<I> _ActivateInstance<I>()
         {
             IntPtr instancePtr;
@@ -308,6 +313,10 @@ namespace WinRT
             }
         }
 
+#if NET
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2091:RequiresUnreferencedCode",
+            Justification = "No members of the generic type are dynamically accessed in this code path.")]
+#endif
         public ObjectReference<I> _As<I>() => _IActivationFactory.As<I>();
         public IObjectReference _As(Guid iid) => _IActivationFactory.As<WinRT.Interop.IUnknownVftbl>(iid);
     }
@@ -320,7 +329,16 @@ namespace WinRT
         public static new I AsInterface<I>() => _factory.Value.AsInterface<I>();
         public static ObjectReference<I> As<I>() => _factory._As<I>();
         public static IObjectReference As(Guid iid) => _factory._As(iid);
-        public static ObjectReference<I> ActivateInstance<I>() => _factory._ActivateInstance<I>();
+
+#if NET
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2091:RequiresUnreferencedCode", 
+            Justification = "No members of the generic type are dynamically accessed in this code path.")]
+#endif
+        public static ObjectReference<I> ActivateInstance<
+#if NET
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.None)]
+#endif 
+            I>() => _factory._ActivateInstance<I>();
     }
 
     internal class ComponentActivationFactory : global::WinRT.Interop.IActivationFactory
@@ -466,7 +484,7 @@ namespace WinRT
             // If target no longer exists, destroy cache
             lock (this)
             {
-                using var resolved = this.target.Resolve(typeof(IUnknownVftbl).GUID);
+                using var resolved = this.target.Resolve(InterfaceIIDs.IUnknown_IID);
                 if (resolved == null)
                 {
                     this.target = target;
@@ -482,7 +500,7 @@ namespace WinRT
             // If target no longer exists, destroy cache
             lock (this)
             {
-                using var resolved = this.target.Resolve(typeof(IUnknownVftbl).GUID);
+                using var resolved = this.target.Resolve(InterfaceIIDs.IUnknown_IID);
                 if (resolved == null)
                 {
                     return null;
@@ -522,7 +540,7 @@ namespace WinRT
                     return;
                 }
 #else
-            int hr = obj.TryAs<IUnknownVftbl>(typeof(IWeakReferenceSource).GUID, out var weakRefSource);
+            int hr = obj.TryAs<IUnknownVftbl>(InterfaceIIDs.IWeakReferenceSource_IID, out var weakRefSource);
             if (hr != 0)
             {
                 return;
@@ -593,6 +611,7 @@ namespace WinRT
         readonly delegate* unmanaged[Stdcall]<System.IntPtr, System.IntPtr, out WinRT.EventRegistrationToken, int> _addHandler;
         readonly delegate* unmanaged[Stdcall]<System.IntPtr, WinRT.EventRegistrationToken, int> _removeHandler;
         protected System.WeakReference<State> _state;
+        private readonly (Action<TDelegate>, Action<TDelegate>) _handlerTuple;
 
         protected EventSource(IObjectReference obj,
             delegate* unmanaged[Stdcall]<System.IntPtr, System.IntPtr, out WinRT.EventRegistrationToken, int> addHandler,
@@ -604,13 +623,10 @@ namespace WinRT
             _removeHandler = removeHandler;
             _index = index;
             _state = Cache.GetState(obj, index);
+            _handlerTuple = (Subscribe, Unsubscribe);
         }
 
-        protected abstract IObjectReference CreateMarshaler(TDelegate del);
-
-        protected abstract IntPtr GetAbi(IObjectReference marshaler);
-
-        protected abstract void DisposeMarshaler(IObjectReference marshaler);
+        protected abstract ObjectReferenceValue CreateMarshaler(TDelegate del);
 
         protected abstract State CreateEventState();
 
@@ -638,7 +654,7 @@ namespace WinRT
                     var marshaler = CreateMarshaler(eventInvoke);
                     try
                     {
-                        var nativeDelegate = GetAbi(marshaler);
+                        var nativeDelegate = marshaler.GetAbi();
                         state.InitalizeReferenceTracking(nativeDelegate);
                         ExceptionHelpers.ThrowExceptionForHR(_addHandler(_obj.ThisPtr, nativeDelegate, out state.token));
                     }
@@ -646,7 +662,7 @@ namespace WinRT
                     {
                         // Dispose our managed reference to the delegate's CCW.
                         // Either the native event holds a reference now or the _addHandler call failed.
-                        DisposeMarshaler(marshaler);
+                        marshaler.Dispose();
                     }
                 }
             }
@@ -670,6 +686,8 @@ namespace WinRT
             }
         }
 
+        public (Action<TDelegate>, Action<TDelegate>) EventActions => _handlerTuple;
+
         private void UnsubscribeFromNative(State state)
         {
             ExceptionHelpers.ThrowExceptionForHR(_removeHandler(_obj.ThisPtr, state.token));
@@ -687,14 +705,8 @@ namespace WinRT
         {
         }
 
-        protected override IObjectReference CreateMarshaler(System.EventHandler<T> del) =>
-            del is null ? null : ABI.System.EventHandler<T>.CreateMarshaler(del);
-
-        protected override void DisposeMarshaler(IObjectReference marshaler) =>
-            ABI.System.EventHandler<T>.DisposeMarshaler(marshaler);
-
-        protected override IntPtr GetAbi(IObjectReference marshaler) =>
-            marshaler is null ? IntPtr.Zero : ABI.System.EventHandler<T>.GetAbi(marshaler);
+        protected override ObjectReferenceValue CreateMarshaler(System.EventHandler<T> del) => 
+            ABI.System.EventHandler<T>.CreateMarshaler2(del);
 
         protected override State CreateEventState() =>
             new EventState(_obj.ThisPtr, _index);
@@ -842,22 +854,28 @@ namespace WinRT
             }
         }
     }
+
+    internal static class InterfaceIIDs
+    {
+        internal static readonly Guid IInspectable_IID = new(0xAF86E2E0, 0xB12D, 0x4c6a, 0x9C, 0x5A, 0xD7, 0xAA, 0x65, 0x10, 0x1E, 0x90);
+        internal static readonly Guid IUnknown_IID = new(0, 0, 0, 0xC0, 0, 0, 0, 0, 0, 0, 0x46);
+        internal static readonly Guid IWeakReferenceSource_IID = new(0x00000038, 0, 0, 0xC0, 0, 0, 0, 0, 0, 0, 0x46);
+    }
 }
 
-
+#if !NET
 namespace System.Runtime.CompilerServices
 {
     [AttributeUsage(AttributeTargets.Method)]
     internal sealed class ModuleInitializerAttribute : Attribute { }
 }
+#endif
 
 namespace WinRT
 {
     internal static class ProjectionInitializer
     {
-#pragma warning disable 0436
         [ModuleInitializer]
-#pragma warning restore 0436
         internal static void InitalizeProjection()
         {
             ComWrappersSupport.RegisterProjectionAssembly(typeof(ProjectionInitializer).Assembly);

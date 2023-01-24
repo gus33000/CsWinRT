@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -21,7 +22,11 @@ namespace WinRT
             return type.GetGuidType().GUID;
         }
 
-        public static Guid GetIID(Type type)
+        public static Guid GetIID(
+#if NET
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)]
+#endif
+            Type type)
         {
             type = type.GetGuidType();
             if (!type.IsGenericType)
@@ -31,8 +36,22 @@ namespace WinRT
             return (Guid)type.GetField("PIID").GetValue(null);
         }
 
-        public static string GetSignature(Type type)
+        public static string GetSignature(
+#if NET
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)]
+#endif
+            Type type)
         {
+            if (type == typeof(object))
+            {
+                return "cinterface(IInspectable)";
+            }
+
+            if (type == typeof(string))
+            {
+                return "string";
+            }
+
             var helperType = type.FindHelperType();
             if (helperType != null)
             {
@@ -41,18 +60,6 @@ namespace WinRT
                 {
                     return (string)sigMethod.Invoke(null, null);
                 }
-            }
-
-            type = type.IsInterface ? (type.GetAuthoringMetadataType() ?? type) : type;
-            if (type == typeof(object))
-            {
-                return "cinterface(IInspectable)";
-            }
-
-            if (type.IsGenericType)
-            {
-                var args = type.GetGenericArguments().Select(t => GetSignature(t));
-                return "pinterface({" + GetGUID(type) + "};" + String.Join(";", args) + ")";
             }
 
             if (type.IsValueType)
@@ -76,7 +83,7 @@ namespace WinRT
                         {
                             if (type.IsEnum)
                             {
-                                var isFlags = type.CustomAttributes.Any(cad => cad.AttributeType == typeof(FlagsAttribute));
+                                var isFlags = type.IsDefined(typeof(FlagsAttribute));
                                 return "enum(" + type.FullName + ";" + (isFlags ? "u4" : "i4") + ")";
                             }
                             if (!type.IsPrimitive)
@@ -89,19 +96,22 @@ namespace WinRT
                 }
             }
 
-            if (type == typeof(string))
-            {
-                return "string";
-            }
+            type = type.IsInterface ? (type.GetAuthoringMetadataType() ?? type) : type;
 
-            if (Projections.TryGetDefaultInterfaceTypeForRuntimeClassType(type, out Type iface))
+            if (type.IsGenericType)
             {
-                return "rc(" + type.FullName + ";" + GetSignature(iface) + ")";
+                var args = type.GetGenericArguments().Select(t => GetSignature(t));
+                return "pinterface({" + GetGUID(type) + "};" + String.Join(";", args) + ")";
             }
 
             if (type.IsDelegate())
             {
                 return "delegate({" + GetGUID(type) + "})";
+            }
+
+            if (type.IsClass && Projections.TryGetDefaultInterfaceTypeForRuntimeClassType(type, out Type iface))
+            {
+                return "rc(" + type.FullName + ";" + GetSignature(iface) + ")";
             }
 
             return "{" + type.GUID.ToString() + "}";

@@ -35,7 +35,7 @@ namespace ABI.Windows.UI.Xaml.Data
 
         public static implicit operator WinRTPropertyChangedEventArgsRuntimeClassFactory(IObjectReference obj) => (obj != null) ? new WinRTPropertyChangedEventArgsRuntimeClassFactory(obj) : null;
         public static implicit operator WinRTPropertyChangedEventArgsRuntimeClassFactory(ObjectReference<Vftbl> obj) => (obj != null) ? new WinRTPropertyChangedEventArgsRuntimeClassFactory(obj) : null;
-        protected readonly ObjectReference<Vftbl> _obj;
+        private readonly ObjectReference<Vftbl> _obj;
         public IntPtr ThisPtr => _obj.ThisPtr;
         public ObjectReference<I> AsInterface<I>() => _obj.As<I>();
         public A As<A>() => _obj.AsType<A>();
@@ -68,6 +68,26 @@ namespace ABI.Windows.UI.Xaml.Data
                 MarshalInspectable<object>.DisposeAbi(__retval);
             }
         }
+
+        public unsafe ObjectReferenceValue CreateInstance(string name)
+        {
+            IntPtr __innerInterface = default;
+            IntPtr __retval = default;
+            try
+            {
+                MarshalString.Pinnable __name = new(name);
+                fixed (void* ___name = __name)
+                {
+                    global::WinRT.ExceptionHelpers.ThrowExceptionForHR(_obj.Vftbl.CreateInstance_0(ThisPtr, MarshalString.GetAbi(ref __name), IntPtr.Zero, &__innerInterface, &__retval));
+                    return new ObjectReferenceValue(__retval);
+                }
+            }
+            finally
+            {
+                MarshalInspectable<object>.DisposeAbi(__innerInterface);
+            }
+        }
+
     }
 }
 
@@ -102,6 +122,16 @@ namespace ABI.System.ComponentModel
             return ActivationFactory.Instance.CreateInstance(value.PropertyName, null, out _);
         }
 
+        public static ObjectReferenceValue CreateMarshaler2(global::System.ComponentModel.PropertyChangedEventArgs value)
+        {
+            if (value is null)
+            {
+                return new ObjectReferenceValue();
+            }
+
+            return ActivationFactory.Instance.CreateInstance(value.PropertyName);
+        }
+
         public static IntPtr GetAbi(IObjectReference m) => m?.ThisPtr ?? IntPtr.Zero;
 
         public static global::System.ComponentModel.PropertyChangedEventArgs FromAbi(IntPtr ptr)
@@ -111,11 +141,10 @@ namespace ABI.System.ComponentModel
                 return null;
             }
 
-            using var args = ObjectReference<ABI.Windows.UI.Xaml.Data.IPropertyChangedEventArgsVftbl>.FromAbi(ptr);
             IntPtr propertyName = IntPtr.Zero;
             try
             {
-                ExceptionHelpers.ThrowExceptionForHR(args.Vftbl.get_PropertyName_0(args.ThisPtr, &propertyName));
+                ExceptionHelpers.ThrowExceptionForHR((**(ABI.Windows.UI.Xaml.Data.IPropertyChangedEventArgsVftbl**)ptr).get_PropertyName_0(ptr, &propertyName));
                 return new global::System.ComponentModel.PropertyChangedEventArgs(MarshalString.FromAbi(propertyName));
             }
             finally
@@ -126,8 +155,7 @@ namespace ABI.System.ComponentModel
 
         public static unsafe void CopyManaged(global::System.ComponentModel.PropertyChangedEventArgs o, IntPtr dest)
         {
-            using var objRef = CreateMarshaler(o);
-            *(IntPtr*)dest.ToPointer() = objRef?.GetRef() ?? IntPtr.Zero;
+            *(IntPtr*)dest.ToPointer() = CreateMarshaler2(o).Detach();
         }
 
         public static IntPtr FromManaged(global::System.ComponentModel.PropertyChangedEventArgs value)
@@ -136,8 +164,7 @@ namespace ABI.System.ComponentModel
             {
                 return IntPtr.Zero;
             }
-            using var objRef = CreateMarshaler(value);
-            return objRef.GetRef();
+            return CreateMarshaler2(value).Detach();
         }
 
         public static void DisposeMarshaler(IObjectReference m) { m?.Dispose(); }

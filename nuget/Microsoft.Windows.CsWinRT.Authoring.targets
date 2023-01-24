@@ -11,9 +11,8 @@ Copyright (C) Microsoft Corporation. All rights reserved.
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <!-- Name the RuntimeConfig properly -->
     <ProjectRuntimeConfigFileName>WinRT.Host.runtimeconfig.json</ProjectRuntimeConfigFileName>
-    <!-- Make sure WinRT.Runtime.dll and Microsoft.Windows.SDK.NET.dll get binplaced with authored component's dll -->
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <CsWinRTDetectDependentAuthoringWinMDs Condition="'$(CsWinRTDetectDependentAuthoringWinMDs)'==''">true</CsWinRTDetectDependentAuthoringWinMDs>
+    <GetCopyToOutputDirectoryItemsDependsOn>$(GetCopyToOutputDirectoryItemsDependsOn);CsWinRTAuthoring_AddManagedDependencies</GetCopyToOutputDirectoryItemsDependsOn>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -59,29 +58,46 @@ Copyright (C) Microsoft Corporation. All rights reserved.
   <!-- For Project Reference consumers, copy the necessary WinRT DLLs to output directory --> 
   <ItemGroup> 
 
-    <CsWinRTAuthoringDependencyDlls Condition="Exists('$(CsWinRTPath)lib\net5.0\WinRT.Host.Shim.dll')" Include="$(CsWinRTPath)lib\net5.0\WinRT.Host.Shim.dll" />
-    <CsWinRTAuthoringDependencyDlls Condition="Exists('$(CsWinRTPath)lib\net5.0\WinRT.Runtime.dll')" Include="$(CsWinRTPath)lib\net5.0\WinRT.Runtime.dll" />
-    
-    <None Condition="Exists('$(CsWinRTPath)lib\net5.0\WinRT.Host.Shim.dll')" Include="$(CsWinRTPath)lib\net5.0\WinRT.Host.Shim.dll">
+    <None Condition="Exists('$(CsWinRTPath)lib\net6.0\WinRT.Host.Shim.dll')" Include="$(CsWinRTPath)lib\net6.0\WinRT.Host.Shim.dll">
       <TargetPath>WinRT.Host.Shim.dll</TargetPath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
 
-    <None Condition="Exists('$(CsWinRTPath)lib\net5.0\WinRT.Runtime.dll')" Include="$(CsWinRTPath)lib\net5.0\WinRT.Runtime.dll">
-      <TargetPath>WinRT.Runtime.dll</TargetPath>
+    <None Condition="Exists('$(CsWinRTPath)hosting\$(CsWinRTAuthoring_Platform)\native\WinRT.Host.dll')" 
+          Include="$(CsWinRTPath)hosting\$(CsWinRTAuthoring_Platform)\native\WinRT.Host.dll">
+      <TargetPath>WinRT.Host.dll</TargetPath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
 
-    <None Condition="Exists('$(CsWinRTPath)runtimes\win-$(CsWinRTAuthoring_Platform)\native\WinRT.Host.dll')" 
-          Include="$(CsWinRTPath)runtimes\win-$(CsWinRTAuthoring_Platform)\native\WinRT.Host.dll">
-      <TargetPath>WinRT.Host.dll</TargetPath>
+    <None Condition="Exists('$(CsWinRTPath)hosting\$(CsWinRTAuthoring_Platform)\native\en-US\WinRT.Host.dll.mui')"
+          Include="$(CsWinRTPath)hosting\$(CsWinRTAuthoring_Platform)\native\en-US\WinRT.Host.dll.mui">
+      <TargetPath>WinRT.Host.dll.mui</TargetPath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
 
  </ItemGroup>
 
+  <!-- Any managed dependencies of the WinRT component won't automatically be brought 
+        in by a referencing C++ app, so we manually set them to be copied here -->
+  <Target Name="CsWinRTAuthoring_AddManagedDependencies"
+          BeforeTargets="GetCopyToOutputDirectoryItems"
+          Returns="@(AllItemsFullPathWithTargetPath)">
+
+    <ItemGroup>
+      
+      <!-- Make sure all managed binaries/projections are shared across project references made by native apps -->
+      <AllItemsFullPathWithTargetPath Include="@(ReferenceCopyLocalPaths)" 
+        Condition="'%(ReferenceCopyLocalPaths.AssetType)' == 'runtime'">
+        <TargetPath>%(ReferenceCopyLocalPaths.DestinationSubDirectory)%(ReferenceCopyLocalPaths.Filename)%(ReferenceCopyLocalPaths.Extension)</TargetPath>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </AllItemsFullPathWithTargetPath>
+
+    </ItemGroup>
+
+  </Target>
+
   <!-- Add the RuntimeConfig to output of project reference consumers -->
-  <Target Name="CsWinRTAuthoring_AddRuntimeDependenciesToContent" 
+  <Target Name="CsWinRTAuthoring_CopyRuntimeConfigJson" 
           AfterTargets="GenerateBuildRuntimeConfigurationFiles" 
           BeforeTargets="GetCopyToOutputDirectoryItems;_GetCopyToOutputDirectoryItemsFromThisProject">
 
@@ -166,27 +182,8 @@ Copyright (C) Microsoft Corporation. All rights reserved.
 
   </Target>
 
-  <!-- For project references, we need to copy the SDK.NET.dll to the output directory -->
-  <Target Name="CsWinRTCopySDKRefDllToOutDir" AfterTargets="ResolveRuntimePackAssets">
-
-    <ItemGroup>
-
-      <!-- Local item group to store the SDK.NET.dll -->
-      <CsWinRTSDKRefDll Include="@(RuntimePackAsset)" Condition="'%(RuntimePackAsset.DestinationSubPath)' == 'Microsoft.Windows.SDK.NET.dll'" />
-      <!-- the target "CsWinRTIncludeHostDlls" uses the item group CsWinRTAuthoringDependencyDlls
-            as a source for all managed DLLS that need to be packaged -->
-      <CsWinRTAuthoringDependencyDlls Include="@(CsWinRTSDKRefDll)" />
-      <!-- Make sure it is copied out -->
-      <_ThisProjectItemstoCopyToOutputDirectory Include="@(CsWinRTSDKRefDll)">
-        <Link>%(FileName)%(Extension)</Link>
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        <TargetPath>Microsoft.Windows.SDK.NET.dll</TargetPath>
-      </_ThisProjectItemstoCopyToOutputDirectory>
-    
-    </ItemGroup>
-  
-  </Target>
-
+<!-- Each component will need the transitive targets modified to be for their app,
+     so we rename a few fields in the XML by changing "CsWinRT" to "$(AssemblyName)" -->
   <Target Name="CsWinRTGenerateTransitiveTargets" BeforeTargets="CsWinRTIncludeHostDlls"> 
 
     <!-- Use the Authoring.Transitive targets as a template to rewrite for the authoring component -->
@@ -236,10 +233,10 @@ Copyright (C) Microsoft Corporation. All rights reserved.
 
     <!-- Transform the fetched xml nodes -->
     <PropertyGroup>      
-      <Transformed1>$([System.String]::Copy('$(Flat_Peeked_Depends1)').Replace('CsWinRT','$(AssemblyName)'))</Transformed1>
-      <Transformed2>$([System.String]::Copy('$(Flat_Peeked_Depends2)').Replace('CsWinRT','$(AssemblyName)'))</Transformed2>
-      <Transformed3>$([System.String]::Copy('$(Flat_Peeked_Target1)').Replace('CsWinRT','$(AssemblyName)'))</Transformed3>
-      <Transformed4>$([System.String]::Copy('$(Flat_Peeked_Target2)').Replace('CsWinRT','$(AssemblyName)'))</Transformed4>
+      <Transformed1>$([System.String]::Copy('$(Flat_Peeked_Depends1)').Replace('CsWinRT','$(AssemblyName)').Replace(".","_"))</Transformed1>
+      <Transformed2>$([System.String]::Copy('$(Flat_Peeked_Depends2)').Replace('CsWinRT','$(AssemblyName)').Replace(".","_"))</Transformed2>
+      <Transformed3>$([System.String]::Copy('$(Flat_Peeked_Target1)').Replace('CsWinRT','$(AssemblyName)').Replace(".","_"))</Transformed3>
+      <Transformed4>$([System.String]::Copy('$(Flat_Peeked_Target2)').Replace('CsWinRT','$(AssemblyName)').Replace(".","_"))</Transformed4>
     </PropertyGroup>
 
     <!-- Change the target names -->
@@ -255,6 +252,11 @@ Copyright (C) Microsoft Corporation. All rights reserved.
     
     <!-- When packing, include all necessary DLLs and the targets file for DLL copying on the native side -->
     <ItemGroup>
+
+      <Content Include="$(CsWinRTPath)lib\net6.0\WinRT.Host.Shim.dll">
+        <Pack>true</Pack>
+        <PackagePath>lib\$(TargetFramework)</PackagePath>
+      </Content>
     
       <!-- We must pack any managed DLLs the component depends on, because a native consumer won't restore them -->
       <Content Include="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.AssetType)' == 'runtime'">
@@ -269,10 +271,21 @@ Copyright (C) Microsoft Corporation. All rights reserved.
       </Content>
 
       <!-- Store managed dlls the component needs in the target framework dir --> 
-      <Content Include="@(CsWinRTAuthoringDependencyDlls)">
+      <Content Include="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.FileName)' == 'WinRT.Runtime'">
         <Pack>true</Pack> 
         <PackagePath>lib\$(TargetFramework)</PackagePath>
       </Content>
+
+      <Content Include="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.FileName)' == 'Microsoft.Windows.NET.SDK'">
+        <Pack>true</Pack> 
+        <PackagePath>lib\$(TargetFramework)</PackagePath>
+      </Content>
+
+      <!-- Pack any XAML resource PRI files next to the .winmd -->
+      <Content Include="$(ProjectPriFullPath)">
+        <Pack>true</Pack>
+        <PackagePath>lib\$(TargetFramework)\winmd</PackagePath>
+      </Content>    
 
       <!-- Pack the WinMD we generated in its own folder, under the managed TFM folder -->
       <Content Include="$(TargetDir)$(AssemblyName).winmd">
@@ -287,25 +300,38 @@ Copyright (C) Microsoft Corporation. All rights reserved.
       </Content>
 
       <!-- We package a version of WinRT.Host.dll for each possible architecture -->
-      <!-- x64 --> 
-      <Content Condition="Exists('$(CsWinRTPath)runtimes\win-x64\native\WinRT.Host.dll')" Include="$(CsWinRTPath)runtimes\win-x64\native\WinRT.Host.dll">
+      <Content Condition="Exists('$(CsWinRTPath)hosting\x64\native\WinRT.Host.dll')" Include="$(CsWinRTPath)hosting\x64\native\WinRT.Host.dll">
         <Pack>true</Pack>
-        <PackagePath>runtimes\win-x64\native</PackagePath>
+        <PackagePath>hosting\x64\native</PackagePath>
       </Content>
-      <!-- x86 --> 
-      <Content Condition="Exists('$(CsWinRTPath)runtimes\win-x86\native\WinRT.Host.dll')" Include="$(CsWinRTPath)runtimes\win-x86\native\WinRT.Host.dll">
+      <Content Condition="Exists('$(CsWinRTPath)hosting\x86\native\WinRT.Host.dll')" Include="$(CsWinRTPath)hosting\x86\native\WinRT.Host.dll">
         <Pack>true</Pack>
-        <PackagePath>runtimes\win-x86\native</PackagePath>
+        <PackagePath>hosting\x86\native</PackagePath>
+      </Content> 
+      <Content Condition="Exists('$(CsWinRTPath)hosting\arm\native\WinRT.Host.dll')" Include="$(CsWinRTPath)hosting\arm\native\WinRT.Host.dll">
+        <Pack>true</Pack>
+        <PackagePath>hosting\arm\native</PackagePath>
       </Content>
-      <!-- arm --> 
-      <Content Condition="Exists('$(CsWinRTPath)runtimes\win-arm\native\WinRT.Host.dll')" Include="$(CsWinRTPath)runtimes\win-arm\native\WinRT.Host.dll">
+      <Content Condition="Exists('$(CsWinRTPath)hosting\arm64\native\WinRT.Host.dll')" Include="$(CsWinRTPath)hosting\arm64\native\WinRT.Host.dll">
         <Pack>true</Pack>
-        <PackagePath>runtimes\win-arm\native</PackagePath>
+        <PackagePath>hosting\arm64\native</PackagePath>
       </Content>
-      <!-- arm64 --> 
-      <Content Condition="Exists('$(CsWinRTPath)runtimes\win-arm64\native\WinRT.Host.dll')" Include="$(CsWinRTPath)runtimes\win-arm64\native\WinRT.Host.dll">
+      <!-- Package the MUI for WinRT.Host error strings -->
+      <Content Condition="Exists('$(CsWinRTPath)hosting\x64\native\en-us\WinRT.Host.dll.mui')" Include="$(CsWinRTPath)hosting\x64\native\en-us\WinRT.Host.dll.mui">
         <Pack>true</Pack>
-        <PackagePath>runtimes\win-arm64\native</PackagePath>
+        <PackagePath>hosting\x64\native\en-us</PackagePath>
+      </Content>
+      <Content Condition="Exists('$(CsWinRTPath)hosting\x86\native\en-us\WinRT.Host.dll.mui')" Include="$(CsWinRTPath)hosting\x86\native\en-us\WinRT.Host.dll.mui">
+        <Pack>true</Pack>
+        <PackagePath>hosting\x86\native\en-us</PackagePath>
+      </Content>
+      <Content Condition="Exists('$(CsWinRTPath)hosting\arm\native\en-us\WinRT.Host.dll.mui')" Include="$(CsWinRTPath)hosting\arm\native\en-us\WinRT.Host.dll.mui">
+        <Pack>true</Pack>
+        <PackagePath>hosting\arm\native\en-us</PackagePath>
+      </Content>
+      <Content Condition="Exists('$(CsWinRTPath)hosting\arm64\native\en-us\WinRT.Host.dll.mui')" Include="$(CsWinRTPath)hosting\arm64\native\en-us\WinRT.Host.dll.mui">
+        <Pack>true</Pack>
+        <PackagePath>hosting\arm64\native\en-us</PackagePath>
       </Content>
    </ItemGroup>
 

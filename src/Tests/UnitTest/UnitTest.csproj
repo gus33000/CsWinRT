@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!--Target .NET Core 2.0 to test .NET Standard 2.0 projection -->
-    <TargetFrameworks>netcoreapp2.0;net5.0;net6.0</TargetFrameworks>
+    <!--Target .NET Core 3.1 to test .NET Standard 2.0 projection -->
+    <TargetFrameworks>$(AppBuildTFMs)</TargetFrameworks>
     <Platforms>x64;x86</Platforms>
     <ProjectName>UnitTest</ProjectName>
     <NoWarn>1701;1702;0436;1658</NoWarn>
@@ -18,8 +18,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Projections\TestSubset\TestSubset.csproj" />
     <ProjectReference Include="..\..\Projections\Windows\Windows.csproj" />
-    <ProjectReference Include="..\..\Projections\WinUI\WinUI.csproj" />
+    <ProjectReference Include="..\..\Projections\WinAppSDK\WinAppSDK.csproj" />
     <ProjectReference Include="..\..\Projections\Test\Test.csproj" />
+    <ProjectReference Include="..\OOPExe\OOPExe.csproj" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
     <PackageReference Include="Microsoft.VCRTForwarders.140" Version="1.0.6" />
     <PackageReference Include="xunit" Version="2.4.1" />
@@ -33,6 +34,11 @@
     </PackageReference>
     <PackageReference Include="XunitXml.TestLogger" Version="2.1.26" />
     <PackageReference Include="System.Memory" Version="4.5.4" />
+    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.1.635-beta">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">

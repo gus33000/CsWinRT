@@ -9,6 +9,7 @@ using WinRT;
 namespace Windows.UI.Xaml.Data
 {
     [global::WinRT.WindowsRuntimeType]
+    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Microsoft.UI.Xaml.Data.ICustomProperty))]
     [Guid("30DA92C0-23E8-42A0-AE7C-734A0E5D2782")]
     interface ICustomProperty
     {
@@ -284,6 +285,8 @@ namespace ABI.Windows.UI.Xaml.Data
 
         private static readonly ManagedCustomPropertyProviderVftbl AbiToProjectionVftable;
         public static readonly IntPtr AbiToProjectionVftablePtr;
+
+        internal static readonly Guid IID = new(0x7C925755, 0x3E48, 0x42B4, 0x86, 0x77, 0x76, 0x37, 0x22, 0x67, 0x03, 0x3F);
 
         static unsafe ManagedCustomPropertyProviderVftbl()
         {

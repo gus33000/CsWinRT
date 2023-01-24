@@ -1,9 +1,10 @@
 
 namespace Windows.UI.Xaml
 {
-    using Windows.Foundation;
+    using global::Windows.Foundation;
 
     [global::WinRT.WindowsRuntimeType("Windows.Foundation.UniversalApiContract")]
+    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Windows.UI.Xaml.Controls.CornerRadius))]
     [StructLayout(LayoutKind.Sequential)]
 #if EMBED
     internal
@@ -164,6 +165,7 @@ namespace Windows.UI.Xaml
     }
 
     [global::WinRT.WindowsRuntimeType("Windows.Foundation.UniversalApiContract")]
+    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Windows.UI.Xaml.GridLength))]
     [StructLayout(LayoutKind.Sequential)]
 #if EMBED
     internal
@@ -281,6 +283,7 @@ namespace Windows.UI.Xaml
     }
 
     [global::WinRT.WindowsRuntimeType("Windows.Foundation.UniversalApiContract")]
+    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Windows.UI.Xaml.Thickness))]
     [StructLayout(LayoutKind.Sequential)]
 #if EMBED
     internal
@@ -407,6 +410,7 @@ namespace Windows.UI.Xaml
     }
 
     [global::WinRT.WindowsRuntimeType("Windows.Foundation.UniversalApiContract")]
+    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Windows.UI.Xaml.Duration))]
     [StructLayout(LayoutKind.Sequential)]
 #if EMBED
     internal

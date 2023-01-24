@@ -12,6 +12,7 @@ namespace Windows.Foundation
     // a "public" type for the type mapping definition.
     // IReferenceArray cannot appear in signatures, so it doesn't need to actually be public.
     [Guid("61C17707-2D65-11E0-9AE8-D48564015472")]
+    [WindowsRuntimeHelperType(typeof(global::ABI.Windows.Foundation.IReferenceArray<>))]
     internal interface IReferenceArray<T>
     {
         T[] Value { get; }
@@ -72,6 +73,9 @@ namespace ABI.Windows.Foundation
             return ComWrappersSupport.CreateCCWForObject<IUnknownVftbl>(value, PIID);
         }
 
+        public static ObjectReferenceValue CreateMarshaler2(object value) =>
+            ComWrappersSupport.CreateCCWForObjectForMarshaling(value, PIID);
+
         public static IntPtr GetAbi(IObjectReference m) => m?.ThisPtr ?? IntPtr.Zero;
 
         public static object FromAbi(IntPtr ptr)
@@ -85,10 +89,15 @@ namespace ABI.Windows.Foundation
             return wrapper.Value;
         }
 
+        internal static object GetValue(IInspectable inspectable)
+        {
+            var array = new IReferenceArray<T>(inspectable.ObjRef);
+            return array.Value;
+        }
+
         public static unsafe void CopyManaged(object o, IntPtr dest)
         {
-            using var objRef = CreateMarshaler(o);
-            *(IntPtr*)dest.ToPointer() = objRef?.GetRef() ?? IntPtr.Zero;
+            *(IntPtr*)dest.ToPointer() = CreateMarshaler2(o).Detach();
         }
 
         public static IntPtr FromManaged(object value)
@@ -97,7 +106,7 @@ namespace ABI.Windows.Foundation
             {
                 return IntPtr.Zero;
             }
-            return CreateMarshaler(value).GetRef();
+            return CreateMarshaler2(value).Detach();
         }
 
         public static void DisposeMarshaler(IObjectReference m) { m?.Dispose(); }
@@ -125,7 +134,7 @@ namespace ABI.Windows.Foundation
 
         public static implicit operator IReferenceArray<T>(IObjectReference obj) => (obj != null) ? new IReferenceArray<T>(obj) : null;
         public static implicit operator IReferenceArray<T>(ObjectReference<Vftbl> obj) => (obj != null) ? new IReferenceArray<T>(obj) : null;
-        protected readonly ObjectReference<Vftbl> _obj;
+        private readonly ObjectReference<Vftbl> _obj;
         public IntPtr ThisPtr => _obj.ThisPtr;
         public ObjectReference<I> AsInterface<I>() => _obj.As<I>();
         public A As<A>() => _obj.AsType<A>();

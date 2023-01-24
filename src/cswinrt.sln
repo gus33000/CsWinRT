@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29009.5
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32825.248
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cswinrt", "cswinrt\cswinrt.vcxproj", "{6ACFD2B2-E8AA-4CD4-AAD8-213CE8BB2637}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -51,6 +51,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Perf", "Perf", "{539DBDEF-3B49-4503-9BD3-7EB83C2179CB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IIDOptimizer", "Perf\IIDOptimizer\IIDOptimizer.csproj", "{AE3B0611-2FBB-42AB-A245-B4E79868A5F9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CsWinMD", "Authoring\CsWinMD\CsWinMD.csproj", "{B63DC238-AF5B-4790-B038-4F5ABE09F963}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -154,6 +156,22 @@ Global
 		{AE3B0611-2FBB-42AB-A245-B4E79868A5F9}.Release|x64.Build.0 = Release|Any CPU
 		{AE3B0611-2FBB-42AB-A245-B4E79868A5F9}.Release|x86.ActiveCfg = Release|Any CPU
 		{AE3B0611-2FBB-42AB-A245-B4E79868A5F9}.Release|x86.Build.0 = Release|Any CPU
+		{B63DC238-AF5B-4790-B038-4F5ABE09F963}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{B63DC238-AF5B-4790-B038-4F5ABE09F963}.Debug|ARM.Build.0 = Debug|Any CPU
+		{B63DC238-AF5B-4790-B038-4F5ABE09F963}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{B63DC238-AF5B-4790-B038-4F5ABE09F963}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{B63DC238-AF5B-4790-B038-4F5ABE09F963}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B63DC238-AF5B-4790-B038-4F5ABE09F963}.Debug|x64.Build.0 = Debug|Any CPU
+		{B63DC238-AF5B-4790-B038-4F5ABE09F963}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B63DC238-AF5B-4790-B038-4F5ABE09F963}.Debug|x86.Build.0 = Debug|Any CPU
+		{B63DC238-AF5B-4790-B038-4F5ABE09F963}.Release|ARM.ActiveCfg = Release|Any CPU
+		{B63DC238-AF5B-4790-B038-4F5ABE09F963}.Release|ARM.Build.0 = Release|Any CPU
+		{B63DC238-AF5B-4790-B038-4F5ABE09F963}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{B63DC238-AF5B-4790-B038-4F5ABE09F963}.Release|ARM64.Build.0 = Release|Any CPU
+		{B63DC238-AF5B-4790-B038-4F5ABE09F963}.Release|x64.ActiveCfg = Release|Any CPU
+		{B63DC238-AF5B-4790-B038-4F5ABE09F963}.Release|x64.Build.0 = Release|Any CPU
+		{B63DC238-AF5B-4790-B038-4F5ABE09F963}.Release|x86.ActiveCfg = Release|Any CPU
+		{B63DC238-AF5B-4790-B038-4F5ABE09F963}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -163,6 +181,7 @@ Global
 		{0BB8F82D-874E-45AA-BCA3-20CE0562164A} = {DA5AE0BA-E43D-4282-BC80-807DDE0C22C0}
 		{E0C26D3A-504A-4826-BAE2-DE775F865B2A} = {DA5AE0BA-E43D-4282-BC80-807DDE0C22C0}
 		{AE3B0611-2FBB-42AB-A245-B4E79868A5F9} = {539DBDEF-3B49-4503-9BD3-7EB83C2179CB}
+		{B63DC238-AF5B-4790-B038-4F5ABE09F963} = {DA5AE0BA-E43D-4282-BC80-807DDE0C22C0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5AE8C9D7-2613-4E1A-A4F2-579BAC28D0A2}

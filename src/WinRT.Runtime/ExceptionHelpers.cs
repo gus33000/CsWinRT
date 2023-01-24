@@ -84,7 +84,26 @@ namespace WinRT
             }
         }
 
-        public static Exception GetExceptionForHR(int hr) => hr >= 0 ? null : GetExceptionForHR(hr, false, out _);
+        // Retrieve restricted error info from thread without removing it, for propagation and debugging (watch, locals, etc)
+        private static IObjectReference BorrowRestrictedErrorInfo()
+        {
+            if (getRestrictedErrorInfo == null)
+                return null;
+
+            Marshal.ThrowExceptionForHR(getRestrictedErrorInfo(out IntPtr restrictedErrorInfoPtr));
+            if (restrictedErrorInfoPtr == IntPtr.Zero)
+                return null;
+
+            if (setRestrictedErrorInfo != null)
+            {
+                setRestrictedErrorInfo(restrictedErrorInfoPtr);
+                return ObjectReference<ABI.WinRT.Interop.IRestrictedErrorInfo.Vftbl>.FromAbi(restrictedErrorInfoPtr);
+            }
+
+            return ObjectReference<ABI.WinRT.Interop.IRestrictedErrorInfo.Vftbl>.Attach(ref restrictedErrorInfoPtr);
+        }
+
+        public static Exception GetExceptionForHR(int hr) => hr >= 0 ? null : GetExceptionForHR(hr, true, out _);
 
         private static Exception GetExceptionForHR(int hr, bool useGlobalErrorState, out bool restoredExceptionFromGlobalState)
         {
@@ -99,15 +118,12 @@ namespace WinRT
             string restrictedCapabilitySid = null;
             bool hasOtherLanguageException = false;
 
-            if (useGlobalErrorState && getRestrictedErrorInfo != null)
+            if (useGlobalErrorState)
             {
-                Marshal.ThrowExceptionForHR(getRestrictedErrorInfo(out IntPtr restrictedErrorInfoPtr));
-
-                if (restrictedErrorInfoPtr != IntPtr.Zero)
+                using var restrictedErrorInfoRef = BorrowRestrictedErrorInfo();
+                if (restrictedErrorInfoRef != null)
                 {
-                    IObjectReference restrictedErrorInfoRef = ObjectReference<ABI.WinRT.Interop.IRestrictedErrorInfo.Vftbl>.Attach(ref restrictedErrorInfoPtr);
                     restrictedErrorInfoToSave = restrictedErrorInfoRef.As<ABI.WinRT.Interop.IRestrictedErrorInfo.Vftbl>();
-
                     ABI.WinRT.Interop.IRestrictedErrorInfo restrictedErrorInfo = new ABI.WinRT.Interop.IRestrictedErrorInfo(restrictedErrorInfoRef);
                     restrictedErrorInfo.GetErrorDetails(out description, out int hrLocal, out restrictedError, out restrictedCapabilitySid);
                     restrictedErrorReference = restrictedErrorInfo.GetReference();
@@ -230,11 +246,13 @@ See https://aka.ms/cswinrt/interop#windows-sdk",
         public static void ReportUnhandledError(Exception ex)
         {
             SetErrorInfo(ex);
-            if (getRestrictedErrorInfo != null && roReportUnhandledError != null)
+            if (roReportUnhandledError != null)
             {
-                Marshal.ThrowExceptionForHR(getRestrictedErrorInfo(out IntPtr ppRestrictedErrorInfo));
-                using var restrictedErrorRef = ObjectReference<IUnknownVftbl>.Attach(ref ppRestrictedErrorInfo);
-                roReportUnhandledError(restrictedErrorRef.ThisPtr);
+                var restrictedErrorInfoRef = BorrowRestrictedErrorInfo();
+                if (restrictedErrorInfoRef != null)
+                {
+                    roReportUnhandledError(restrictedErrorInfoRef.ThisPtr);
+                }
             }
         }
 
@@ -402,30 +420,6 @@ See https://aka.ms/cswinrt/interop#windows-sdk",
             e.SetHResult(hresult);
             return e;
         }
-    }
-
-    internal static class ErrorStrings
-    {
-        internal static string Format(string format, params object[] args) => String.Format(format, args);
-
-        internal static readonly string Arg_IndexOutOfRangeException = "Index was outside the bounds of the array.";
-        internal static readonly string Arg_KeyNotFound = "The given key was not present in the dictionary.";
-        internal static readonly string Arg_KeyNotFoundWithKey = "The given key '{0}' was not present in the dictionary.";
-        internal static readonly string Arg_RankMultiDimNotSupported = "Only single dimensional arrays are supported for the requested action.";
-        internal static readonly string Argument_AddingDuplicate = "An item with the same key has already been added.";
-        internal static readonly string Argument_AddingDuplicateWithKey = "An item with the same key has already been added. Key: {0}";
-        internal static readonly string Argument_IndexOutOfArrayBounds = "The specified index is out of bounds of the specified array.";
-        internal static readonly string Argument_InsufficientSpaceToCopyCollection = "The specified space is not sufficient to copy the elements from this Collection.";
-        internal static readonly string ArgumentOutOfRange_Index = "Index was out of range. Must be non-negative and less than the size of the collection.";
-        internal static readonly string ArgumentOutOfRange_IndexLargerThanMaxValue = "This collection cannot work with indices larger than Int32.MaxValue - 1 (0x7FFFFFFF - 1).";
-        internal static readonly string InvalidOperation_CannotRemoveLastFromEmptyCollection = "Cannot remove the last element from an empty collection.";
-        internal static readonly string InvalidOperation_CollectionBackingDictionaryTooLarge = "The collection backing this Dictionary contains too many elements.";
-        internal static readonly string InvalidOperation_CollectionBackingListTooLarge = "The collection backing this List contains too many elements.";
-        internal static readonly string InvalidOperation_EnumEnded = "Enumeration already finished.";
-        internal static readonly string InvalidOperation_EnumFailedVersion = "Collection was modified; enumeration operation may not execute.";
-        internal static readonly string InvalidOperation_EnumNotStarted = "Enumeration has not started. Call MoveNext.";
-        internal static readonly string NotSupported_KeyCollectionSet = "Mutating a key collection derived from a dictionary is not allowed.";
-        internal static readonly string NotSupported_ValueCollectionSet = "Mutating a value collection derived from a dictionary is not allowed.";
     }
 }
 

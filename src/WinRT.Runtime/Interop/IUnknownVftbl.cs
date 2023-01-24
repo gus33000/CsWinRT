@@ -15,7 +15,7 @@ namespace WinRT.Interop
     unsafe struct IUnknownVftbl
     {
         private void* _QueryInterface;
-        public delegate* unmanaged[Stdcall]<IntPtr, ref Guid, out IntPtr, int> QueryInterface { get => (delegate* unmanaged[Stdcall]<IntPtr, ref Guid, out IntPtr, int>)_QueryInterface; set => _QueryInterface = (void*)value; }
+        public delegate* unmanaged[Stdcall]<IntPtr, Guid*, IntPtr*, int> QueryInterface { get => (delegate* unmanaged[Stdcall]<IntPtr, Guid*, IntPtr*, int>)_QueryInterface; set => _QueryInterface = (void*)value; }
         private void* _AddRef;
         public delegate* unmanaged[Stdcall]<IntPtr, uint> AddRef { get => (delegate* unmanaged[Stdcall]<IntPtr, uint>)_AddRef; set => _AddRef = (void*)value; }
         private void* _Release;
@@ -24,7 +24,7 @@ namespace WinRT.Interop
         public static IUnknownVftbl AbiToProjectionVftbl => ComWrappersSupport.IUnknownVftbl;
         public static IntPtr AbiToProjectionVftblPtr => ComWrappersSupport.IUnknownVftblPtr;
 
-        internal static readonly Guid IID = new(0, 0, 0, 0xC0, 0, 0, 0, 0, 0, 0, 0x46);
+        internal static readonly Guid IID = InterfaceIIDs.IUnknown_IID;
 
         // Avoids boxing when using default Equals.
         internal bool Equals(IUnknownVftbl other)

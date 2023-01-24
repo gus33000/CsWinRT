@@ -6,15 +6,15 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.System;
+using Microsoft.Windows.System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.VisualStudio.TestTools.UnitTesting.AppContainer;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
+using WinRT.Interop;
 
 namespace ObjectLifetimeTests
 {
@@ -104,6 +104,34 @@ namespace ObjectLifetimeTests
 
             o = null;
         }
+
+        [TestMethod]
+        public void TestInitializeWithWindow()
+        {
+            _asyncQueue
+                .CallFromUIThread(() =>
+                {
+                    Windows.Storage.Pickers.FolderPicker folderMenu = new();
+                    Microsoft.UI.Xaml.Window testWindow = new();
+                    var windowHandle = WindowNative.GetWindowHandle(testWindow);
+                    InitializeWithWindow.Initialize(testWindow, windowHandle);
+                    Verify(windowHandle != IntPtr.Zero, "Failed to initialize");
+                });
+        }
+
+
+        [TestMethod]
+        public void TestWindowNative()
+        {
+            _asyncQueue
+                .CallFromUIThread(() =>
+                {
+                    Microsoft.UI.Xaml.Window testWindow = new();
+                    var windowHandle = WindowNative.GetWindowHandle(testWindow);
+                    Verify(windowHandle != IntPtr.Zero, "Window Handle was null");
+                });
+        }
+
         [TestMethod]
         public void BasicTest1()
         {

@@ -15,12 +15,14 @@ namespace Windows.UI.Xaml.Interop
 {
     [global::WinRT.WindowsRuntimeType]
     [Guid("036D2C08-DF29-41AF-8AA2-D774BE62BA6F")]
+    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.System.Collections.IEnumerable))]
     internal interface IBindableIterable
     {
         IBindableIterator First();
     }
     [global::WinRT.WindowsRuntimeType]
     [Guid("6A1D6C07-076D-49F2-8314-F52C9C9A8331")]
+    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Microsoft.UI.Xaml.Interop.IBindableIterator))]
     internal interface IBindableIterator
     {
         bool MoveNext();
@@ -50,6 +52,7 @@ namespace Windows.UI.Xaml.Interop
     }
     [global::WinRT.WindowsRuntimeType]
     [Guid("346DD6E7-976E-4BC3-815D-ECE243BC0F33")]
+    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Microsoft.UI.Xaml.Interop.IBindableVectorView))]
     internal interface IBindableVectorView : IEnumerable
     {
         object GetAt(uint index);
@@ -362,12 +365,12 @@ namespace ABI.Windows.UI.Xaml.Interop
 
         public unsafe bool IndexOf(object value, out uint index)
         {
-            IObjectReference __value = default;
+            ObjectReferenceValue __value = default;
             uint __index = default;
             byte __retval = default;
             try
             {
-                __value = MarshalInspectable<object>.CreateMarshaler(value);
+                __value = MarshalInspectable<object>.CreateMarshaler2(value);
                 global::WinRT.ExceptionHelpers.ThrowExceptionForHR(_obj.Vftbl.IndexOf_2(ThisPtr, MarshalInspectable<object>.GetAbi(__value), &__index, &__retval));
                 index = __index;
                 return __retval != 0;
@@ -601,7 +604,7 @@ namespace ABI.System.Collections
                     uint size = _vector.Size;
                     if (((uint)int.MaxValue) < size)
                     {
-                        throw new InvalidOperationException(ErrorStrings.InvalidOperation_CollectionBackingListTooLarge);
+                        throw new InvalidOperationException(WinRTRuntimeErrorStrings.InvalidOperation_CollectionBackingListTooLarge);
                     }
 
                     return (int)size;
@@ -615,7 +618,7 @@ namespace ABI.System.Collections
 
                 // ICollection expects the destination array to be single-dimensional.
                 if (array.Rank != 1)
-                    throw new ArgumentException(ErrorStrings.Arg_RankMultiDimNotSupported);
+                    throw new ArgumentException(WinRTRuntimeErrorStrings.Arg_RankMultiDimNotSupported);
 
                 int destLB = array.GetLowerBound(0);
                 int srcLen = Count;
@@ -634,10 +637,10 @@ namespace ABI.System.Collections
                 // list.CopyTo(items, 0);
 
                 if (srcLen > (destLen - (arrayIndex - destLB)))
-                    throw new ArgumentException(ErrorStrings.Argument_InsufficientSpaceToCopyCollection);
+                    throw new ArgumentException(WinRTRuntimeErrorStrings.Argument_InsufficientSpaceToCopyCollection);
 
                 if (arrayIndex - destLB > destLen)
-                    throw new ArgumentException(ErrorStrings.Argument_IndexOutOfArrayBounds);
+                    throw new ArgumentException(WinRTRuntimeErrorStrings.Argument_IndexOutOfArrayBounds);
 
                 // We need to verify the index as we;
                 for (uint i = 0; i < srcLen; i++)
@@ -675,7 +678,7 @@ namespace ABI.System.Collections
                 uint size = _vector.Size;
                 if (((uint)int.MaxValue) < size)
                 {
-                    throw new InvalidOperationException(ErrorStrings.InvalidOperation_CollectionBackingListTooLarge);
+                    throw new InvalidOperationException(WinRTRuntimeErrorStrings.InvalidOperation_CollectionBackingListTooLarge);
                 }
 
                 return (int)(size - 1);
@@ -705,7 +708,7 @@ namespace ABI.System.Collections
 
                 if (((uint)int.MaxValue) < index)
                 {
-                    throw new InvalidOperationException(ErrorStrings.InvalidOperation_CollectionBackingListTooLarge);
+                    throw new InvalidOperationException(WinRTRuntimeErrorStrings.InvalidOperation_CollectionBackingListTooLarge);
                 }
 
                 return (int)index;
@@ -728,7 +731,7 @@ namespace ABI.System.Collections
                 {
                     if (((uint)int.MaxValue) < index)
                     {
-                        throw new InvalidOperationException(ErrorStrings.InvalidOperation_CollectionBackingListTooLarge);
+                        throw new InvalidOperationException(WinRTRuntimeErrorStrings.InvalidOperation_CollectionBackingListTooLarge);
                     }
 
                     RemoveAtHelper(_vector, index);
@@ -830,7 +833,7 @@ namespace ABI.System.Collections
                 }
                 catch (ArgumentOutOfRangeException ex)
                 {
-                    throw ex.GetExceptionForHR(ExceptionHelpers.E_BOUNDS, ErrorStrings.ArgumentOutOfRange_Index);
+                    throw ex.GetExceptionForHR(ExceptionHelpers.E_BOUNDS, WinRTRuntimeErrorStrings.ArgumentOutOfRange_Index);
                 }
             }
 
@@ -865,7 +868,7 @@ namespace ABI.System.Collections
                 }
                 catch (ArgumentOutOfRangeException ex)
                 {
-                    throw ex.GetExceptionForHR(ExceptionHelpers.E_BOUNDS, ErrorStrings.ArgumentOutOfRange_Index);
+                    throw ex.GetExceptionForHR(ExceptionHelpers.E_BOUNDS, WinRTRuntimeErrorStrings.ArgumentOutOfRange_Index);
                 }
             }
 
@@ -912,7 +915,7 @@ namespace ABI.System.Collections
             {
                 if (_list.Count == 0)
                 {
-                    Exception e = new InvalidOperationException(ErrorStrings.InvalidOperation_CannotRemoveLastFromEmptyCollection);
+                    Exception e = new InvalidOperationException(WinRTRuntimeErrorStrings.InvalidOperation_CannotRemoveLastFromEmptyCollection);
                     e.SetHResult(ExceptionHelpers.E_BOUNDS);
                     throw e;
                 }
@@ -932,7 +935,7 @@ namespace ABI.System.Collections
                 // that Size > int.MaxValue:
                 if (((uint)int.MaxValue) <= index || index >= (uint)listCapacity)
                 {
-                    Exception e = new ArgumentOutOfRangeException(nameof(index), ErrorStrings.ArgumentOutOfRange_IndexLargerThanMaxValue);
+                    Exception e = new ArgumentOutOfRangeException(nameof(index), WinRTRuntimeErrorStrings.ArgumentOutOfRange_IndexLargerThanMaxValue);
                     e.SetHResult(ExceptionHelpers.E_BOUNDS);
                     throw e;
                 }
@@ -959,7 +962,7 @@ namespace ABI.System.Collections
                     // that Size > int.MaxValue:
                     if (((uint)int.MaxValue) <= index || index >= (uint)listCapacity)
                     {
-                        Exception e = new ArgumentOutOfRangeException(nameof(index), ErrorStrings.ArgumentOutOfRange_IndexLargerThanMaxValue);
+                        Exception e = new ArgumentOutOfRangeException(nameof(index), WinRTRuntimeErrorStrings.ArgumentOutOfRange_IndexLargerThanMaxValue);
                         e.SetHResult(ExceptionHelpers.E_BOUNDS);
                         throw e;
                     }
@@ -978,7 +981,7 @@ namespace ABI.System.Collections
                     }
                     catch (ArgumentOutOfRangeException ex)
                     {
-                        throw ex.GetExceptionForHR(ExceptionHelpers.E_BOUNDS, ErrorStrings.ArgumentOutOfRange_Index);
+                        throw ex.GetExceptionForHR(ExceptionHelpers.E_BOUNDS, WinRTRuntimeErrorStrings.ArgumentOutOfRange_Index);
                     }
                 }
 
@@ -1277,12 +1280,12 @@ namespace ABI.System.Collections
 
         public unsafe bool IndexOf(object value, out uint index)
         {
-            IObjectReference __value = default;
+            ObjectReferenceValue __value = default;
             uint __index = default;
             byte __retval = default;
             try
             {
-                __value = MarshalInspectable<object>.CreateMarshaler(value);
+                __value = MarshalInspectable<object>.CreateMarshaler2(value);
                 global::WinRT.ExceptionHelpers.ThrowExceptionForHR(_obj.Vftbl.IndexOf_3(ThisPtr, MarshalInspectable<object>.GetAbi(__value), &__index, &__retval));
                 index = __index;
                 return __retval != 0;
@@ -1295,10 +1298,10 @@ namespace ABI.System.Collections
 
         public unsafe void SetAt(uint index, object value)
         {
-            IObjectReference __value = default;
+            ObjectReferenceValue __value = default;
             try
             {
-                __value = MarshalInspectable<object>.CreateMarshaler(value);
+                __value = MarshalInspectable<object>.CreateMarshaler2(value);
                 global::WinRT.ExceptionHelpers.ThrowExceptionForHR(_obj.Vftbl.SetAt_4(ThisPtr, index, MarshalInspectable<object>.GetAbi(__value)));
             }
             finally
@@ -1309,10 +1312,10 @@ namespace ABI.System.Collections
 
         public unsafe void InsertAt(uint index, object value)
         {
-            IObjectReference __value = default;
+            ObjectReferenceValue __value = default;
             try
             {
-                __value = MarshalInspectable<object>.CreateMarshaler(value);
+                __value = MarshalInspectable<object>.CreateMarshaler2(value);
                 global::WinRT.ExceptionHelpers.ThrowExceptionForHR(_obj.Vftbl.InsertAt_5(ThisPtr, index, MarshalInspectable<object>.GetAbi(__value)));
             }
             finally
@@ -1328,10 +1331,10 @@ namespace ABI.System.Collections
 
         public unsafe void Append(object value)
         {
-            IObjectReference __value = default;
+            ObjectReferenceValue __value = default;
             try
             {
-                __value = MarshalInspectable<object>.CreateMarshaler(value);
+                __value = MarshalInspectable<object>.CreateMarshaler2(value);
                 global::WinRT.ExceptionHelpers.ThrowExceptionForHR(_obj.Vftbl.Append_7(ThisPtr, MarshalInspectable<object>.GetAbi(__value)));
             }
             finally
