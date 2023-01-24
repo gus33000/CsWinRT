@@ -1333,12 +1333,12 @@ private % Make_%()
     {
         auto event_type = w.write_temp("%", bind<write_type_name>(get_type_semantics(event.EventType()), typedef_name_type::Projected, false));
 
-        // Microsoft.UI.Xaml.Input.ICommand has a lower-fidelity type mapping where the type of the event handler doesn't project one-to-one
+        // Windows.UI.Xaml.Input.ICommand has a lower-fidelity type mapping where the type of the event handler doesn't project one-to-one
         // so we need to hard-code mapping the event handler from the mapped WinRT type to the correct .NET type.
         if (event.Name() == "CanExecuteChanged" && event_type == "global::System.EventHandler<object>")
         {
             auto parent_type = w.write_temp("%", bind<write_type_name>(event.Parent(), typedef_name_type::NonProjected, true));
-            if (parent_type == "Microsoft.UI.Xaml.Input.ICommand")
+            if (parent_type == "Windows.UI.Xaml.Input.ICommand")
             {
                 event_type = "global::System.EventHandler";
             }

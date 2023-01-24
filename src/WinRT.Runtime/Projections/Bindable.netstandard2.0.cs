@@ -22,7 +22,7 @@ namespace Windows.UI.Xaml.Interop
     }
     [global::WinRT.WindowsRuntimeType]
     [Guid("6A1D6C07-076D-49F2-8314-F52C9C9A8331")]
-    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Microsoft.UI.Xaml.Interop.IBindableIterator))]
+    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Windows.UI.Xaml.Interop.IBindableIterator))]
     internal interface IBindableIterator
     {
         bool MoveNext();
@@ -52,7 +52,7 @@ namespace Windows.UI.Xaml.Interop
     }
     [global::WinRT.WindowsRuntimeType]
     [Guid("346DD6E7-976E-4BC3-815D-ECE243BC0F33")]
-    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Microsoft.UI.Xaml.Interop.IBindableVectorView))]
+    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Windows.UI.Xaml.Interop.IBindableVectorView))]
     internal interface IBindableVectorView : IEnumerable
     {
         object GetAt(uint index);
