@@ -2777,7 +2777,7 @@ set => %.Indexer_Set(%, index, value);
             visibility, self, target);
     }
 
-    void write_custom_mapped_type_members(writer& w, std::string_view target, mapped_type const& mapping, bool is_private)
+    void write_custom_mapped_type_members(writer& w, std::string_view target, mapped_type const& mapping, bool is_private, bool call_static_abi_methods, std::string objref_name)
     {
         if (mapping.abi_name == "IIterable`1") 
         {

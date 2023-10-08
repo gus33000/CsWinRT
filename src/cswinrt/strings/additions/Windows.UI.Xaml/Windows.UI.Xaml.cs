@@ -4,7 +4,7 @@ namespace Windows.UI.Xaml
     using global::Windows.Foundation;
 
     [global::WinRT.WindowsRuntimeType("Windows.Foundation.UniversalApiContract")]
-    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Windows.UI.Xaml.Controls.CornerRadius))]
+    [global::WinRT.WindowsRuntimeHelperType(typeof(global::ABI.Windows.UI.Xaml.CornerRadius))]
     [StructLayout(LayoutKind.Sequential)]
 #if EMBED
     internal
